@@ -242,6 +242,8 @@ class newPLCDialog(QtWidgets.QDialog):
         return list_of_new_plcs
     
     def parseSensortext(self):
+        #warning=[]
+        #error=[]
         list_of_new_sensors=[]
         text=text=self.newSensortxt.text()
         text=text.replace(' ','')
@@ -258,8 +260,8 @@ class newPLCDialog(QtWidgets.QDialog):
         return(list_of_new_sensors)
 
     def parseActuatortext(self):
-        warning=[]
-        error=[]
+        #warning=[]
+        #error=[]
         list_of_new_actuators=[]
         text=self.newActuatortxt.text()
         text=text.replace(' ','')
@@ -273,7 +275,5 @@ class newPLCDialog(QtWidgets.QDialog):
                 list_of_new_actuators.append(i[0])
         # make list of the contents of the list_of_new_Acuators
         list_of_new_actuators=[x.split(',') for x in list_of_new_actuators]
-        for actuator in list_of_new_actuators:
-            list_of_new_actuators.append(actuator)
         return list_of_new_actuators
 
