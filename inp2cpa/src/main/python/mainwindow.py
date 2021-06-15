@@ -1,3 +1,4 @@
+from os import remove
 import sys
 from PyQt5 import QtCore, QtGui, uic, QtWidgets
 from PyQt5.QtCore import QThread, pyqtSignal, pyqtSlot
@@ -7,6 +8,15 @@ from PyQt5.QtWidgets import *
 import wntr
 import inp2cpa
 
+class store_new_plcs:
+    def store(self):
+        self.list_of_new_plcs = []
+class store_new_sensors:
+    def store(self):
+        self.list_of_newsensors = []
+class store_new_actuators:
+    def store(self):
+        self.list_of_new_actuators = []
 
 class inp2cpaApp(QtWidgets.QMainWindow):
     def __init__(self, ui):
@@ -21,6 +31,7 @@ class inp2cpaApp(QtWidgets.QMainWindow):
         self.save_cpa_btn.clicked.connect(self.saveCPAfile)
         self.availablePLCnames=['2','3','4','5','6','7','8','9','10','11','12','13','14','15','16']
         self.TextToExport=None
+        self.isAltered = False
         # self.findheadersButton.clicked.connect(self.getHeadersfunc)
         # self.getPart.clicked.connect(self.getPartfunc)
         # self.showDFbutton.clicked.connect(self.showDFfunc)
@@ -59,27 +70,41 @@ class inp2cpaApp(QtWidgets.QMainWindow):
         newPLCDlg=newPLCDialog(self.cpa_dict)
         if newPLCDlg.exec_():
             pass
-        
-        
+
     def parse_dict(self):
-        formatted_string='[CYBERNODES]\n'     #### writing cpa file here ### need to find where its storing its info. is it in here or wntr. is it already storeing the available data to write cyberlinks ect or will we need to parse for that
-        for PLCkey in self.cpa_dict.keys():
-            formatted_string=formatted_string+ str(PLCkey)+'\t'
-            sensorlist=self.cpa_dict[PLCkey][0]
-            removeChar='[]\''
-            senstr=','.join(map(str,sensorlist))
-            for character in removeChar:
-                senstr = senstr.replace(character, '')
-            formatted_string=formatted_string+ senstr+'\t'
-            actlist=self.cpa_dict[PLCkey][1]
-            actstr=','.join(map(str,actlist))
-            for character in removeChar:
-                actstr = actstr.replace(character, '')
-            formatted_string=formatted_string+ actstr+'\n'
-        formatted_string=formatted_string+'[CYBERATTACKS]'+'\n'+'[CYBEROPTIONS]'+'\n' + 'verbosity'+'\t'+'1'+'\n'
-        formatted_string=formatted_string+'what_to_store' + '\t'+'everything'+'\n'
-        formatted_string=formatted_string+'pda_options' + '\t'+'0.5'+'\t'+'0'+'\t'+'20'+'\t'+'Wagner'
-        return formatted_string
+        if inp2cpaApp.isAltered:
+            formatted_string = '[CYBERNODES]\n;Name,\tSensors,\tActuators\n'
+            for x in range(len(store_new_plcs.list_of_new_plcs)):
+                range(len(store_new_sensors.list_of_new_sensors))
+                range(len(store_new_actuators.list_of_new_actuators))
+                formatted_string = formatted_string + str(store_new_plcs.list_of_new_plcs[x]) + '\t' + str(store_new_sensors.list_of_new_sensors[x]) + '\t' + str(store_new_actuators.list_of_new_actuators[x]) + '\n'
+            formatted_string  = formatted_string + '[CYBERLINKS]\n;Source,\tDestination,\tSensors\n'   
+            formatted_string = formatted_string + '[CYBERATTACKS]\n;Type,\tTarget,\tInit_cond,\tEnd_cond,\tArguments\n'
+            formatted_string = formatted_string + '[CYBEROPTIONS]' + '\n' + 'verbosity'+ '\t' +'1' +'\n'
+            formatted_string = formatted_string + ';what_to_store' + '\t'+'everything'+'\n'
+            formatted_string = formatted_string + ';pda_options' + '\t' + '0.5' + '\t' + '0' + '\t' + '20' + '\t' + 'Wagner'
+            return formatted_string
+        else:
+            formatted_string='[CYBERNODES]\n'   
+            for PLCkey in self.cpa_dict.keys():
+                formatted_string=formatted_string+ str(PLCkey)+'\t'
+                sensorlist=self.cpa_dict[PLCkey][0]
+                removeChar='[]\''
+                senstr=','.join(map(str,sensorlist))
+                for character in removeChar:
+                    senstr = senstr.replace(character, '')
+                formatted_string=formatted_string+ senstr+'\t'
+                actlist=self.cpa_dict[PLCkey][1]
+                actstr=','.join(map(str,actlist))
+                for character in removeChar:
+                    actstr = actstr.replace(character, '')
+            formatted_string = formatted_string+ actstr+'\n'
+            formatted_string = formatted_string+'[CYBERATTACKS]'+'\n'+'[CYBEROPTIONS]'+'\n' + 'verbosity'+'\t'+'1'+'\n'
+            formatted_string = formatted_string+'what_to_store' + '\t'+'everything'+'\n'
+            formatted_string = formatted_string+'pda_options' + '\t'+'0.5'+'\t'+'0'+'\t'+'20'+'\t'+'Wagner'
+            return formatted_string
+                
+
     
     def saveCPAfile(self):
         name = str(QtWidgets.QFileDialog.getSaveFileName(self, 'Save File', '.', "(*.cpa)")[0])
@@ -145,12 +170,13 @@ class newPLCDialog(QtWidgets.QDialog):
         self.setMinimumWidth(800)   
 
     def check_changes_func(self):
-        list_of_new_plcs = self.parsePLCtext()
-        print(list_of_new_plcs)
-        list_of_new_sensors = self.parseSensortext()
-        print(list_of_new_sensors)
-        list_of_new_actuators = self.parseActuatortext()
-        print(list_of_new_actuators)
+        store_new_plcs.list_of_new_plcs = self.parsePLCtext()
+        print(store_new_plcs.list_of_new_plcs)
+        store_new_sensors.list_of_new_sensors = self.parseSensortext()
+        print(store_new_sensors.list_of_new_sensors)
+        store_new_actuators.list_of_new_actuators = self.parseActuatortext()
+        print(store_new_actuators.list_of_new_actuators)
+        inp2cpaApp.isAltered = True
         
     def parsePLCtext(self):
         #overwritingPLC1=False
