@@ -19,6 +19,8 @@ class store_new_actuators:
         self.list_of_new_actuators = []
 
 class inp2cpaApp(QtWidgets.QMainWindow):
+    isAltered = False
+
     def __init__(self, ui):
         QtWidgets.QMainWindow.__init__(self)
         uic.loadUi(ui, self)
@@ -31,7 +33,8 @@ class inp2cpaApp(QtWidgets.QMainWindow):
         self.save_cpa_btn.clicked.connect(self.saveCPAfile)
         self.availablePLCnames=['2','3','4','5','6','7','8','9','10','11','12','13','14','15','16']
         self.TextToExport=None
-        self.isAltered = False
+        #self.isAltered = False
+        #print(self.isAltered)
         # self.findheadersButton.clicked.connect(self.getHeadersfunc)
         # self.getPart.clicked.connect(self.getPartfunc)
         # self.showDFbutton.clicked.connect(self.showDFfunc)
