@@ -29,12 +29,13 @@ class inp2cpaApp(QtWidgets.QMainWindow):
         # click  buttons
         self.importINP.clicked.connect(self.importINPfunc)
         self.reassigncybernodes.clicked.connect(self.reassignfunc)
+        #self.addCyberAttacks.clicked.connect(self.addAttack)
+        #self.modifyCyberOptions.clicked.connect(self.modOptions)
+        self.makeCyberLinks.clicked.connect(self.addLinks)
         self.previewFileBtn.clicked.connect(self.previewCPAfile)
         self.save_cpa_btn.clicked.connect(self.saveCPAfile)
         self.availablePLCnames=['2','3','4','5','6','7','8','9','10','11','12','13','14','15','16']
         self.TextToExport=None
-        #self.isAltered = False
-        #print(self.isAltered)
         # self.findheadersButton.clicked.connect(self.getHeadersfunc)
         # self.getPart.clicked.connect(self.getPartfunc)
         # self.showDFbutton.clicked.connect(self.showDFfunc)
@@ -63,7 +64,7 @@ class inp2cpaApp(QtWidgets.QMainWindow):
             self.inp_path.setText('Nothing imported !')
     
     def previewCPAfile(self):
-        formated_string=self.parse_dict() ### where we start the cpa preview
+        formated_string=self.parse_dict() 
         previewDlg=PreviewDialog(formated_string)
         if previewDlg.exec_():
             self.TextToExport=formated_string
@@ -73,6 +74,20 @@ class inp2cpaApp(QtWidgets.QMainWindow):
         newPLCDlg=newPLCDialog(self.cpa_dict)
         if newPLCDlg.exec_():
             pass
+
+    def addAttack(self):
+        pass
+    def modOptions(self):
+        pass
+    def addLinks(self):
+        newLinkTxt = []
+        newLink = cyberLinkDialog(newLinkTxt)
+        if newLink.exec_():
+            pass
+
+#self.addCyberAttacks.clicked.connect(self.addAttack)
+#self.modifyCyberOptions.clicked.connect(self.modOptions)
+#self.makeCyberLinks.clicked.connect(self.addlinks)
 
     def parse_dict(self):
         if inp2cpaApp.isAltered:
@@ -235,4 +250,39 @@ class newPLCDialog(QtWidgets.QDialog):
         # make list of the contents of the list_of_new_Acuators
         list_of_new_actuators=[x.split(',') for x in list_of_new_actuators]
         return list_of_new_actuators
+
+class cyberLinkDialog(QtWidgets.QDialog):
+    def __init__(self, cpa_dict):
+        super(cyberLinkDialog, self).__init__()
+        ###Source field
+        self.newSource = QtWidgets.QLineEdit()
+        self.newSource.setMinimumWidth(700)
+        ###Destination field
+        self.newDestination = QtWidgets.QLineEdit()
+        self.newDestination.setMinimumWidth(700)
+        ###Sensor field
+        self.newSensor = QtWidgets.QLineEdit()
+        self.newSensor.setMinimumWidth(700)
+        ###Button ok/cancel
+        self.button_box = QtWidgets.QDialogButtonBox(QtWidgets.QDialogButtonBox.Ok | QtWidgets.QDialogButtonBox.Cancel)
+        self.button_box.accepted.connect(self.accept)
+        self.button_box.rejected.connect(self.reject)
+        ###Layout
+        layout = QtWidgets.QFormLayout()
+        layout.setFieldGrowthPolicy(QtWidgets.QFormLayout.AllNonFixedFieldsGrow)
+        layout.addRow('Add Source names seperated by \',\'', self.newSource)
+        layout.addRow('Add Destination names seperated by \',\'', self.newDestination)
+        layout.addRow('Add Sensor names seperated by \',\'', self.newSensor)
+        layout.addWidget(self.button_box)
+        ###Show Dialog
+        self.setLayout(layout)
+        self.setWindowTitle("Create Cyber Links")
+        self.setMinimumWidth(800)
+
+    def newSource(self):
+        pass
+    def newDestination(self):
+        pass
+    def newSensor(self):
+        pass
 
