@@ -50,6 +50,19 @@
      <string>Re-assign nodes</string>
     </property>
    </widget>
+   <widget class="QPushButton" name="makeCyberLinks">
+    <property name="geometry">
+     <rect>
+      <x>310</x>
+      <y>40</y>
+      <width>91</width>
+      <height>23</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>Make CyberLinks</string>
+    </property>
+   </widget>
    <widget class="QPushButton" name="previewFileBtn">
     <property name="geometry">
      <rect>
