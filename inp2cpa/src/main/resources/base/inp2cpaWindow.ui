@@ -6,7 +6,7 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>433</width>
+    <width>510</width>
     <height>88</height>
    </rect>
   </property>
@@ -17,7 +17,7 @@
    <widget class="QPushButton" name="importINP">
     <property name="geometry">
      <rect>
-      <x>340</x>
+      <x>425</x>
       <y>9</y>
       <width>75</width>
       <height>23</height>
@@ -32,7 +32,7 @@
      <rect>
       <x>10</x>
       <y>10</y>
-      <width>321</width>
+      <width>400</width>
       <height>20</height>
      </rect>
     </property>
@@ -53,7 +53,7 @@
    <widget class="QPushButton" name="makeCyberLinks">
     <property name="geometry">
      <rect>
-      <x>310</x>
+      <x>110</x>
       <y>40</y>
       <width>91</width>
       <height>23</height>
@@ -63,10 +63,23 @@
      <string>Make CyberLinks</string>
     </property>
    </widget>
+      <widget class="QPushButton" name="addCyberAttacks">
+    <property name="geometry">
+     <rect>
+      <x>210</x>
+      <y>40</y>
+      <width>91</width>
+      <height>23</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>Add Cyber-Attack</string>
+    </property>
+   </widget>
    <widget class="QPushButton" name="previewFileBtn">
     <property name="geometry">
      <rect>
-      <x>110</x>
+      <x>310</x>
       <y>40</y>
       <width>91</width>
       <height>23</height>
@@ -79,7 +92,7 @@
    <widget class="QPushButton" name="save_cpa_btn">
     <property name="geometry">
      <rect>
-      <x>210</x>
+      <x>410</x>
       <y>40</y>
       <width>91</width>
       <height>23</height>
