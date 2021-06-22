@@ -8,15 +8,33 @@ from PyQt5.QtWidgets import *
 import wntr
 import inp2cpa
 
-class store_new_plcs:
+# class store_new_plcs:
+#     def store(self):
+#         self.list_of_new_plcs = []
+# class store_new_sensors:
+#     def store(self):
+#         self.list_of_new_sensors = []
+# class store_new_actuators:
+#     def store(self):
+#         self.list_of_new_actuators = []
+# class store_new_source:
+#     def store(self):
+#         self.list_of_new_sources = []
+# class store_new_destination:
+#     def store(self):
+#         self.list_of_new_destinations = []
+# class store_new_link_sensors:
+#     def store(self):
+#         self.list_of_new_link_sensors = []
+
+class storage:
     def store(self):
         self.list_of_new_plcs = []
-class store_new_sensors:
-    def store(self):
-        self.list_of_newsensors = []
-class store_new_actuators:
-    def store(self):
+        self.list_of_new_sensors = []
         self.list_of_new_actuators = []
+        self.list_of_new_sources = []
+        self.list_of_new_destinations = []
+        self.list_of_new_link_sensors = []
 
 class inp2cpaApp(QtWidgets.QMainWindow):
     isAltered = False
@@ -92,10 +110,10 @@ class inp2cpaApp(QtWidgets.QMainWindow):
     def parse_dict(self):
         if inp2cpaApp.isAltered:
             formatted_string = '[CYBERNODES]\n;Name,\tSensors,\tActuators\n'
-            for x in range(len(store_new_plcs.list_of_new_plcs)):
-                range(len(store_new_sensors.list_of_new_sensors))
-                range(len(store_new_actuators.list_of_new_actuators))
-                formatted_string = formatted_string + str(store_new_plcs.list_of_new_plcs[x]) + '\t' + str(store_new_sensors.list_of_new_sensors[x]) + '\t' + str(store_new_actuators.list_of_new_actuators[x]) + '\n'
+            for x in range(len(storage.list_of_new_plcs)):
+                range(len(storage.list_of_new_sensors))
+                range(len(storage.list_of_new_actuators))
+                formatted_string = formatted_string + str(storage.list_of_new_plcs[x]) + '\t' + str(storage.list_of_new_sensors[x]) + '\t' + str(storage.list_of_new_actuators[x]) + '\n'
             formatted_string  = formatted_string + '[CYBERLINKS]\n;Source,\tDestination,\tSensors\n'   
             formatted_string = formatted_string + '[CYBERATTACKS]\n;Type,\tTarget,\tInit_cond,\tEnd_cond,\tArguments\n'
             formatted_string = formatted_string + '[CYBEROPTIONS]' + '\n' + 'verbosity'+ '\t' +'1' +'\n'
@@ -188,12 +206,12 @@ class newPLCDialog(QtWidgets.QDialog):
         self.setMinimumWidth(800)   
 
     def check_changes_func(self):
-        store_new_plcs.list_of_new_plcs = self.parsePLCtext()
-        print(store_new_plcs.list_of_new_plcs)
-        store_new_sensors.list_of_new_sensors = self.parseSensortext()
-        print(store_new_sensors.list_of_new_sensors)
-        store_new_actuators.list_of_new_actuators = self.parseActuatortext()
-        print(store_new_actuators.list_of_new_actuators)
+        storage.list_of_new_plcs = self.parsePLCtext()
+        print(storage.list_of_new_plcs)
+        storage.list_of_new_sensors = self.parseSensortext()
+        print(storage.list_of_new_sensors)
+        storage.list_of_new_actuators = self.parseActuatortext()
+        print(storage.list_of_new_actuators)
         inp2cpaApp.isAltered = True
         
     def parsePLCtext(self):
@@ -263,6 +281,10 @@ class cyberLinkDialog(QtWidgets.QDialog):
         ###Sensor field
         self.newSensor = QtWidgets.QLineEdit()
         self.newSensor.setMinimumWidth(700)
+        ###Check changes
+        self.button_check = QtWidgets.QPushButton()
+        self.button_check.setText('Check changes')
+        self.button_check.clicked.connect(self.link_check)
         ###Button ok/cancel
         self.button_box = QtWidgets.QDialogButtonBox(QtWidgets.QDialogButtonBox.Ok | QtWidgets.QDialogButtonBox.Cancel)
         self.button_box.accepted.connect(self.accept)
@@ -280,9 +302,26 @@ class cyberLinkDialog(QtWidgets.QDialog):
         self.setMinimumWidth(800)
 
     def newSource(self):
-        pass
+        list_of_sources=[]
+        text=self.newSource.text()
+        text=text.replace(' ','')
+        text=text.split(',')
+        for source in text:
+            list_of_sources.append(source)
+        return list_of_sources
     def newDestination(self):
-        pass
+        list_of_destinations=[]
+        text=self.newDestination.text()
+        text=text.replace(' ','')
+        text=text.split(',')
+        for destination in text:
+            list_of_destinations.append(destination)
+        return list_of_destinations
     def newSensor(self):
-        pass
+        list_of_sensors=[]
+        text=self.newSource.text()
+        text=text.split(',')
+        for sensor in text:
+            list_of_sources.append(sensor)
+        return list_of_sensors
 
