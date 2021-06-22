@@ -38,6 +38,7 @@ class storage:
 
 class inp2cpaApp(QtWidgets.QMainWindow):
     isAltered = False
+    hasCyberLinks = False
 
     def __init__(self, ui):
         QtWidgets.QMainWindow.__init__(self)
@@ -98,9 +99,8 @@ class inp2cpaApp(QtWidgets.QMainWindow):
     def modOptions(self):
         pass
     def addLinks(self):
-        newLinkTxt = []
-        newLink = cyberLinkDialog(newLinkTxt)
-        if newLink.exec_():
+        newLinkDlg = cyberLinkDialog(self.cpa_dict)
+        if newLinkDlg.exec_():
             pass
 
 #self.addCyberAttacks.clicked.connect(self.addAttack)
@@ -114,7 +114,15 @@ class inp2cpaApp(QtWidgets.QMainWindow):
                 range(len(storage.list_of_new_sensors))
                 range(len(storage.list_of_new_actuators))
                 formatted_string = formatted_string + str(storage.list_of_new_plcs[x]) + '\t' + str(storage.list_of_new_sensors[x]) + '\t' + str(storage.list_of_new_actuators[x]) + '\n'
-            formatted_string  = formatted_string + '[CYBERLINKS]\n;Source,\tDestination,\tSensors\n'   
+            if inp2cpaApp.hasCyberLinks:
+                formatted_string  = formatted_string + '[CYBERLINKS]\n;Source,\tDestination,\tSensors\n' 
+                for x in range(len(storage.list_of_new_sources)):
+                    range(len(storage.list_of_new_destinations))
+                    range(len(storage.list_of_new_link_sensors))
+                    formatted_string = formatted_string + str(storage.list_of_new_sources[x]) + '\t' + str(storage.list_of_new_destinations[x]) + '\t' + str(storage.list_of_new_link_sensors[x]) + '\n'
+
+            else:
+                formatted_string  = formatted_string + '[CYBERLINKS]\n;Source,\tDestination,\tSensors\n'   
             formatted_string = formatted_string + '[CYBERATTACKS]\n;Type,\tTarget,\tInit_cond,\tEnd_cond,\tArguments\n'
             formatted_string = formatted_string + '[CYBEROPTIONS]' + '\n' + 'verbosity'+ '\t' +'1' +'\n'
             formatted_string = formatted_string + ';what_to_store' + '\t'+'everything'+'\n'
@@ -273,14 +281,14 @@ class cyberLinkDialog(QtWidgets.QDialog):
     def __init__(self, cpa_dict):
         super(cyberLinkDialog, self).__init__()
         ###Source field
-        self.newSource = QtWidgets.QLineEdit()
-        self.newSource.setMinimumWidth(700)
+        self.newSourcetxt = QtWidgets.QLineEdit()
+        self.newSourcetxt.setMinimumWidth(700)
         ###Destination field
-        self.newDestination = QtWidgets.QLineEdit()
-        self.newDestination.setMinimumWidth(700)
+        self.newDestinationtxt = QtWidgets.QLineEdit()
+        self.newDestinationtxt.setMinimumWidth(700)
         ###Sensor field
-        self.newSensor = QtWidgets.QLineEdit()
-        self.newSensor.setMinimumWidth(700)
+        self.newSensortxt = QtWidgets.QLineEdit()
+        self.newSensortxt.setMinimumWidth(700)
         ###Check changes
         self.button_check = QtWidgets.QPushButton()
         self.button_check.setText('Check changes')
@@ -292,36 +300,46 @@ class cyberLinkDialog(QtWidgets.QDialog):
         ###Layout
         layout = QtWidgets.QFormLayout()
         layout.setFieldGrowthPolicy(QtWidgets.QFormLayout.AllNonFixedFieldsGrow)
-        layout.addRow('Add Source names seperated by \',\'', self.newSource)
-        layout.addRow('Add Destination names seperated by \',\'', self.newDestination)
-        layout.addRow('Add Sensor names seperated by \',\'', self.newSensor)
+        layout.addRow('Add Source names seperated by \',\'', self.newSourcetxt)
+        layout.addRow('Add Destination names seperated by \',\'', self.newDestinationtxt)
+        layout.addRow('Add Sensor names seperated by \',\'', self.newSensortxt)
+        layout.addRow('Check changes',self.button_check)
         layout.addWidget(self.button_box)
         ###Show Dialog
         self.setLayout(layout)
         self.setWindowTitle("Create Cyber Links")
         self.setMinimumWidth(800)
 
-    def newSource(self):
+    def parseNewSource(self):
         list_of_sources=[]
-        text=self.newSource.text()
+        text=self.newSourcetxt.text()
         text=text.replace(' ','')
         text=text.split(',')
         for source in text:
             list_of_sources.append(source)
         return list_of_sources
-    def newDestination(self):
+    def parseNewDestination(self):
         list_of_destinations=[]
-        text=self.newDestination.text()
+        text=self.newDestinationtxt.text()
         text=text.replace(' ','')
         text=text.split(',')
         for destination in text:
             list_of_destinations.append(destination)
         return list_of_destinations
-    def newSensor(self):
+    def parseNewSensor(self):
         list_of_sensors=[]
-        text=self.newSource.text()
+        text=self.newSensortxt.text()
         text=text.split(',')
         for sensor in text:
-            list_of_sources.append(sensor)
+            list_of_sensors.append(sensor)
         return list_of_sensors
+
+    def link_check(self):
+        storage.list_of_new_sources = self.parseNewSource()
+        storage.list_of_new_destinations = self.parseNewDestination()
+        storage.list_of_new_link_sensors = self.parseNewSensor()
+        print(storage.list_of_new_sources)
+        print(storage.list_of_new_destinations)
+        print(storage.list_of_new_link_sensors)
+        inp2cpaApp.hasCyberLinks = True
 
