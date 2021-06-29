@@ -8,25 +8,6 @@ from PyQt5.QtWidgets import *
 import wntr
 import inp2cpa
 
-# class store_new_plcs:
-#     def store(self):
-#         self.list_of_new_plcs = []
-# class store_new_sensors:
-#     def store(self):
-#         self.list_of_new_sensors = []
-# class store_new_actuators:
-#     def store(self):
-#         self.list_of_new_actuators = []
-# class store_new_source:
-#     def store(self):
-#         self.list_of_new_sources = []
-# class store_new_destination:
-#     def store(self):
-#         self.list_of_new_destinations = []
-# class store_new_link_sensors:
-#     def store(self):
-#         self.list_of_new_link_sensors = []
-
 class storage:
     def store(self):
         self.list_of_new_plcs = []
@@ -39,6 +20,7 @@ class storage:
 class inp2cpaApp(QtWidgets.QMainWindow):
     isAltered = False
     hasCyberLinks = False
+    hasAttacks = False
 
     def __init__(self, ui):
         QtWidgets.QMainWindow.__init__(self)
@@ -48,7 +30,7 @@ class inp2cpaApp(QtWidgets.QMainWindow):
         # click  buttons
         self.importINP.clicked.connect(self.importINPfunc)
         self.reassigncybernodes.clicked.connect(self.reassignfunc)
-        #self.addCyberAttacks.clicked.connect(self.addAttack)
+        self.addCyberAttacks.clicked.connect(self.addAttack)
         #self.modifyCyberOptions.clicked.connect(self.modOptions)
         self.makeCyberLinks.clicked.connect(self.addLinks)
         self.previewFileBtn.clicked.connect(self.previewCPAfile)
@@ -94,18 +76,18 @@ class inp2cpaApp(QtWidgets.QMainWindow):
         if newPLCDlg.exec_():
             pass
 
-    def addAttack(self):
-        pass
-    def modOptions(self):
-        pass
     def addLinks(self):
         newLinkDlg = cyberLinkDialog(self.cpa_dict)
         if newLinkDlg.exec_():
             pass
+    
+    def addAttack(self):
+        attackDlg = cyberAttackDialog(self.cpa_dict)
+        if attackDlg.exec_():
+            pass
 
-#self.addCyberAttacks.clicked.connect(self.addAttack)
-#self.modifyCyberOptions.clicked.connect(self.modOptions)
-#self.makeCyberLinks.clicked.connect(self.addlinks)
+    # def modOptions(self):
+    # pass
 
     def parse_dict(self):
         if inp2cpaApp.isAltered:
@@ -113,18 +95,18 @@ class inp2cpaApp(QtWidgets.QMainWindow):
             for x in range(len(storage.list_of_new_plcs)):
                 range(len(storage.list_of_new_sensors))
                 range(len(storage.list_of_new_actuators))
-                formatted_string = formatted_string + str(storage.list_of_new_plcs[x]) + '\t' + str(storage.list_of_new_sensors[x]) + '\t' + str(storage.list_of_new_actuators[x]) + '\n'
+                formatted_string = formatted_string + str(storage.list_of_new_plcs[x]) + ',\t' + str(storage.list_of_new_sensors[x]) + ',\t' + str(storage.list_of_new_actuators[x]) + '\n'
             if inp2cpaApp.hasCyberLinks:
                 formatted_string  = formatted_string + '[CYBERLINKS]\n;Source,\tDestination,\tSensors\n' 
                 for x in range(len(storage.list_of_new_sources)):
                     range(len(storage.list_of_new_destinations))
                     range(len(storage.list_of_new_link_sensors))
-                    formatted_string = formatted_string + str(storage.list_of_new_sources[x]) + '\t' + str(storage.list_of_new_destinations[x]) + '\t' + str(storage.list_of_new_link_sensors[x]) + '\n'
+                    formatted_string = formatted_string + str(storage.list_of_new_sources[x]) + ',\t' + str(storage.list_of_new_destinations[x]) + ',\t' + str(storage.list_of_new_link_sensors[x]) + '\n'
 
             else:
                 formatted_string  = formatted_string + '[CYBERLINKS]\n;Source,\tDestination,\tSensors\n'   
             formatted_string = formatted_string + '[CYBERATTACKS]\n;Type,\tTarget,\tInit_cond,\tEnd_cond,\tArguments\n'
-            formatted_string = formatted_string + '[CYBEROPTIONS]' + '\n' + 'verbosity'+ '\t' +'1' +'\n'
+            formatted_string = formatted_string + '[CYBEROPTIONS]\n' + 'verbosity'+ '\t' +'1' +'\n'
             formatted_string = formatted_string + ';what_to_store' + '\t'+'everything'+'\n'
             formatted_string = formatted_string + ';pda_options' + '\t' + '0.5' + '\t' + '0' + '\t' + '20' + '\t' + 'Wagner'
             return formatted_string
@@ -204,8 +186,8 @@ class newPLCDialog(QtWidgets.QDialog):
         layout = QtWidgets.QFormLayout()
         layout.setFieldGrowthPolicy(QtWidgets.QFormLayout.AllNonFixedFieldsGrow)
         layout.addRow('Add PLC names seperated by \',\'', self.newPLCtxt)
-        layout.addRow('Add sensor lists \'[...]\' seperated by \',\'', self.newSensortxt)
-        layout.addRow('Add actuator lists \'[...]\' seperated by \',\'', self.newActuatortxt)
+        layout.addRow('Add sensor groups seperated by a \'  \'' ' sensor lists seperated by \',\'', self.newSensortxt)
+        layout.addRow('Add actuator groups seperated by a \'  \'' ' actuator lists seperated by \',\'', self.newActuatortxt)
         layout.addRow('Check changes',self.button_check)
         layout.addWidget(self.button_box)
         ### dialog show
@@ -228,53 +210,58 @@ class newPLCDialog(QtWidgets.QDialog):
         error=[]
         list_of_new_plcs=[]
         text=self.newPLCtxt.text()
-        text=text.replace(' ','')
+        #text=text.replace(' ','')
         text=text.split(',')
         for plc in text:
-            #if plc in self.cpa_dict.keys():
-                #warning.append(str(plc)+' is already in the .cpa file, line will be overwritten')
-               # if plc == 'PLC1':
-                    #overwritingPLC1=True # This triggers a special condition
-                    #list_of_new_plcs.append(plc)
-            #if plc in list_of_new_plcs:
-                #error.append(str(plc)+' is given multiple times, please revise')
-            list_of_new_plcs.append(plc) ### adding to our list
+            list_of_new_plcs.append(plc)
         return list_of_new_plcs
     
+    # def parseSensortext(self):
+    #     #warning=[]
+    #     #error=[]
+    #     list_of_new_sensors=[]
+    #     text=text=self.newSensortxt.text()
+    #     text=text.replace(' ','')
+    #     start = '['
+    #     end = ']'
+    #     s=text.split(start)
+    #     list_of_new_sensors=[]
+    #     for i in s:
+    #         if i:
+    #          i=i.split(end)
+    #          list_of_new_sensors.append(i[0])
+    #     list_of_new_sensors=[x.split(',') for x in list_of_new_sensors]
+    #     return(list_of_new_sensors)
     def parseSensortext(self):
-        #warning=[]
-        #error=[]
-        list_of_new_sensors=[]
-        text=text=self.newSensortxt.text()
-        text=text.replace(' ','')
-        start = '['
-        end = ']'
-        s=text.split(start)
-        list_of_new_sensors=[]
-        for i in s:
-            if i:
-             i=i.split(end)
-             list_of_new_sensors.append(i[0])
-                # make list of the contents of the list_of_new_sensors
-        list_of_new_sensors=[x.split(',') for x in list_of_new_sensors]
-        return(list_of_new_sensors)
+        list_of_new_sensors = []
+        text = self.newSensortxt.text()
+        text = text.split(',')
+        for sensor in text:
+            list_of_new_sensors.append(sensor)
+        return list_of_new_sensors
 
+    # def parseActuatortext(self):
+    #     #warning=[]
+    #     #error=[]
+    #     list_of_new_actuators=[]
+    #     text=self.newActuatortxt.text()
+    #     text=text.replace(' ','')
+    #     start = '['
+    #     end = ']'
+    #     s=text.split(start)
+    #     list_of_new_actuators=[]
+    #     for i in s:
+    #         if i:
+    #             i=i.split(end)
+    #             list_of_new_actuators.append(i[0])
+    #     list_of_new_actuators=[x.split(',') for x in list_of_new_actuators]
+    #     return list_of_new_actuators
     def parseActuatortext(self):
-        #warning=[]
-        #error=[]
-        list_of_new_actuators=[]
-        text=self.newActuatortxt.text()
-        text=text.replace(' ','')
-        start = '['
-        end = ']'
-        s=text.split(start)
-        list_of_new_actuators=[]
-        for i in s:
-            if i:
-                i=i.split(end)
-                list_of_new_actuators.append(i[0])
-        # make list of the contents of the list_of_new_Acuators
-        list_of_new_actuators=[x.split(',') for x in list_of_new_actuators]
+        list_of_new_actuators = []
+        text = self.newSensortxt.text()
+        text = text.split(',')
+        for actuator in text:
+            list_of_new_actuators.append(actuator)
         return list_of_new_actuators
 
 class cyberLinkDialog(QtWidgets.QDialog):
@@ -343,3 +330,73 @@ class cyberLinkDialog(QtWidgets.QDialog):
         print(storage.list_of_new_link_sensors)
         inp2cpaApp.hasCyberLinks = True
 
+class cyberAttackDialog(QtWidgets.QDialog):
+    def __init__(self, cpa_dict):
+        super(cyberAttackDialog, self).__init__()
+        ### Attack Type Button
+        self.button_comm = QtWidgets.QPushButton()
+        self.button_comm.setText('Communication')
+        self.button_comm.clicked.connect(cyberAttackDialog.comm_window())
+        self.button_act = QtWidgets.QPushButton()
+        self.button_act.setText('Actuator')
+        self.button_act.clicked.connect(cyberAttackDialog.act_window)
+        self.button_sen = QtWidgets.QPushButton()
+        self.button_sen.setText('Sensor')
+        self.button_sen.clicked.connect(cyberAttackDialog.sen_window)
+        self.button_con = QtWidgets.QPushButton()
+        self.button_con.setText('Control')
+        self.button_con.clicked.connect(cyberAttackDialog.con_window)
+        ### buttons ok/cancel
+        self.button_box = QtWidgets.QDialogButtonBox(QtWidgets.QDialogButtonBox.Ok | QtWidgets.QDialogButtonBox.Cancel)
+        self.button_box.accepted.connect(self.accept)
+        self.button_box.rejected.connect(self.reject)
+        ###layout
+        layout = QtWidgets.QFormLayout()
+        layout.addRow(self.button_comm)
+        layout.addRow(self.button_con)
+        layout.addRow(self.button_sen)
+        layout.addRow(self.button_act)
+        layout.addWidget(self.button_box)
+        ###show
+        self.setLayout(layout)
+        self.setWindowTitle("Choose an attack type")
+        self.setMinimumWidth(800)
+
+    def comm_window(self): ################################## just make it its own class
+        #super(cyberAttackDialog, self).__init__()
+        ###Target
+        self.targetTxt = QtWidgets.QLineEdit()
+        self.targetTxt.setMinimumWidth(350)
+        ###init_cond
+        self.initCTxt = QtWidgets.QLineEdit()
+        self.initCTxt.setMinimumWidth(350)
+        ###end_cond
+        self.endCTxt = QtWidgets.QLineEdit()
+        self.endCTxt.setMinimumWidth(350)
+        ###arguments
+        self.argTxt = QtWidgets.QLineEdit()
+        self.argTxt.setMinimumWidth(350)
+        ###buttons
+        self.button_box = QtWidgets.QDialogButtonBox(QtWidgets.QDialogButtonBox.Ok | QtWidgets.QDialogButtonBox.Cancel)
+        self.button_box.accepted.connect(self.accept)
+        self.button_box.rejected.connect(self.reject)
+        ####layout
+        layout = QtWidgets.QFormLayout()
+        layout.setFieldGrowthPolicy(QtWidgets.QFormLayout.AllNonFixedFieldsGrow)
+        layout.addRow('Enter the target link (i.e. P_tank1-PLC1)', self.targetTxt)
+        layout.addRow('Enter the initial condition', self.initCTxt)
+        layout.addRow('Enter the ending condition', self.endCTxt)
+        layout.addRow('Enter the attack arguments', self.argTxt)
+        ###show
+        self.setLayout(layout)
+        self.setWindowTitle("Enter attack information")
+        self.setMinimumWidth(500)
+
+    def sen_window(self):
+        pass
+
+    def act_window(self):
+        pass
+
+    def con_window(self):
+        pass
