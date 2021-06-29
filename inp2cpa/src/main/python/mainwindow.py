@@ -336,7 +336,7 @@ class cyberAttackDialog(QtWidgets.QDialog):
         ### Attack Type Button
         self.button_comm = QtWidgets.QPushButton()
         self.button_comm.setText('Communication')
-        self.button_comm.clicked.connect(cyberAttackDialog.comm_window())
+        self.button_comm.clicked.connect(cyberAttackDialog.comm_window)
         self.button_act = QtWidgets.QPushButton()
         self.button_act.setText('Actuator')
         self.button_act.clicked.connect(cyberAttackDialog.act_window)
