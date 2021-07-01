@@ -6,3 +6,4 @@ File conversion tool to extract relevant data from inp files and use it to creat
  * From within this virtual environment execute: ``` pip install fbs PyQt5==5.15.2 wntr ```
  * Clone the repository: git clone https://github.com/CameronSewell/inp2cpa. This can be done with any built-in CLI git package, or with the official git GUI. In Windows you can download and use a bash emulator such as Git for Windows (https://gitforwindows.org/)
  * Change to the root directory (inp2cpa), where the 'src' folder should be visible, and execute: ``` fbs run ```
+ * If having issues installing packages in the target language you can use a later verison like python 3.8 to install fbs, PyQt5, and wntr. But be sure to change your target language back to 3.6 before attempting to execute '```fbs run```
