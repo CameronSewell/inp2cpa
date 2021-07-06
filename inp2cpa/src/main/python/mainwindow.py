@@ -336,7 +336,7 @@ class cyberAttackDialog(QtWidgets.QDialog):
         ### Attack Type Button
         self.button_comm = QtWidgets.QPushButton()
         self.button_comm.setText('Communication')
-        self.button_comm.clicked.connect(cyberAttackDialog.comm_window)
+        self.button_comm.clicked.connect(self.call_comm)
         self.button_act = QtWidgets.QPushButton()
         self.button_act.setText('Actuator')
         self.button_act.clicked.connect(cyberAttackDialog.act_window)
@@ -362,8 +362,22 @@ class cyberAttackDialog(QtWidgets.QDialog):
         self.setWindowTitle("Choose an attack type")
         self.setMinimumWidth(800)
 
-    def comm_window(self): ################################## just make it its own class
-        #super(cyberAttackDialog, self).__init__()
+    def sen_window(self):
+        pass
+
+    def act_window(self):
+        pass
+
+    def con_window(self):
+        pass
+    def call_comm(self):
+        cw = comm_window(self)
+        if cw.exec_():
+            pass
+
+class comm_window(QtWidgets.QDialog): 
+    def __init__(self, cpa_dict):
+        super(comm_window, self).__init__()
         ###Target
         self.targetTxt = QtWidgets.QLineEdit()
         self.targetTxt.setMinimumWidth(350)
@@ -392,11 +406,4 @@ class cyberAttackDialog(QtWidgets.QDialog):
         self.setWindowTitle("Enter attack information")
         self.setMinimumWidth(500)
 
-    def sen_window(self):
-        pass
 
-    def act_window(self):
-        pass
-
-    def con_window(self):
-        pass
