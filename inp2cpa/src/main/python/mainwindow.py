@@ -201,12 +201,10 @@ class newPLCDialog(QtWidgets.QDialog):
         self.newActuatortxt.setMinimumWidth(700)
         ### Warning label
         self.warningtxt = QtWidgets.QLabel(self.warning[self.warningNo])
-        
         ### Check Changes and Update Warning Label
         def updateChanges (event):
             self.check_changes_func()
             self.warningtxt.setText(self.warning[self.warningNo])
-
         ### button CHECK
         self.button_check = QtWidgets.QPushButton()
         self.button_check.setText('Check Changes')
@@ -215,8 +213,6 @@ class newPLCDialog(QtWidgets.QDialog):
         self.button_box = QtWidgets.QDialogButtonBox(QtWidgets.QDialogButtonBox.Ok | QtWidgets.QDialogButtonBox.Cancel)
         self.button_box.accepted.connect(self.accept)
         self.button_box.rejected.connect(self.reject)
-        
-
         ## layout of the dialog
         layout = QtWidgets.QFormLayout()
         layout.setFieldGrowthPolicy(QtWidgets.QFormLayout.AllNonFixedFieldsGrow)
@@ -226,7 +222,6 @@ class newPLCDialog(QtWidgets.QDialog):
         layout.addRow('Check changes',self.button_check)
         layout.addWidget(self.button_box)
         layout.addWidget(self.warningtxt)
-
         ### dialog show
         self.setLayout(layout)
         self.setWindowTitle("Re-Assign Cyber Nodes")
@@ -250,15 +245,13 @@ class newPLCDialog(QtWidgets.QDialog):
         #text=text.replace(' ','')
         if (len(text)==0):
             self.warningNo=2
-            return list_of_new_plcs
         text=text.split(',')
         for plc in text:
             if (re.search('_.*_', plc)):
                 self.warningNo=1
-            else: 
-                self.warningNo=0
-                list_of_new_plcs.append(plc)
-        #list_of_new_plcs.append(plc)
+            if (len(text)==0):
+                self.warningNo=2
+            list_of_new_plcs.append(plc)
         return list_of_new_plcs
     
     # def parseSensortext(self):
