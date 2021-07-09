@@ -407,14 +407,18 @@ class cyberAttackDialog(QtWidgets.QDialog):
         self.setWindowTitle("Choose an attack type")
         self.setMinimumWidth(800)
 
-    def sen_window(self):
-        pass
-
-    def act_window(self):
-        pass
-
-    def con_window(self):
-        pass
+    def call_sen(self):
+        s = sen_window(self)
+        if s.exec_():
+            pass
+    def call_act(self):
+        at = act_window(self)
+        if at.exec_():
+            pass
+    def call_con(self):
+        co = con_window(self)
+        if co.exec_():
+            pass
     def call_comm(self):
         cw = comm_window(self)
         if cw.exec_():
@@ -450,5 +454,99 @@ class comm_window(QtWidgets.QDialog):
         self.setLayout(layout)
         self.setWindowTitle("Enter attack information")
         self.setMinimumWidth(500)
+
+class act_window(QtWidgets.QDialog):
+    def __init__(self, cpa_dict):
+        super(act_window, self).__init__()
+        ###Target
+        self.targetTxt = QtWidgets.QLineEdit()
+        self.targetTxt.setMinimumWidth(350)
+        ###init_cond
+        self.initCTxt = QtWidgets.QLineEdit()
+        self.initCTxt.setMinimumWidth(350)
+        ###end_cond
+        self.endCTxt = QtWidgets.QLineEdit()
+        self.endCTxt.setMinimumWidth(350)
+        ###arguments
+        self.argTxt = QtWidgets.QLineEdit()
+        self.argTxt.setMinimumWidth(350)
+        ###buttons
+        self.button_box = QtWidgets.QDialogButtonBox(QtWidgets.QDialogButtonBox.Ok | QtWidgets.QDialogButtonBox.Cancel)
+        self.button_box.accepted.connect(self.accept)
+        self.button_box.rejected.connect(self.reject)
+        ####layout
+        layout = QtWidgets.QFormLayout()
+        layout.setFieldGrowthPolicy(QtWidgets.QFormLayout.AllNonFixedFieldsGrow)
+        layout.addRow('Enter the target actuator', self.targetTxt)
+        layout.addRow('Enter the initial condition', self.initCTxt)
+        layout.addRow('Enter the ending condition', self.endCTxt)
+        layout.addRow('Enter the attack arguments', self.argTxt)
+        ###show
+        self.setLayout(layout)
+        self.setWindowTitle("Enter attack information")
+        self.setMinimumWidth(500)
+        
+class con_window(QtWidgets.QDialog):
+    def __init__(self, cpa_dict):
+        super(con_window, self).__init__()
+        ###Target
+        self.targetTxt = QtWidgets.QLineEdit()
+        self.targetTxt.setMinimumWidth(350)
+        ###init_cond
+        self.initCTxt = QtWidgets.QLineEdit()
+        self.initCTxt.setMinimumWidth(350)
+        ###end_cond
+        self.endCTxt = QtWidgets.QLineEdit()
+        self.endCTxt.setMinimumWidth(350)
+        ###arguments
+        self.argTxt = QtWidgets.QLineEdit()
+        self.argTxt.setMinimumWidth(350)
+        ###buttons
+        self.button_box = QtWidgets.QDialogButtonBox(QtWidgets.QDialogButtonBox.Ok | QtWidgets.QDialogButtonBox.Cancel)
+        self.button_box.accepted.connect(self.accept)
+        self.button_box.rejected.connect(self.reject)
+        ####layout
+        layout = QtWidgets.QFormLayout()
+        layout.setFieldGrowthPolicy(QtWidgets.QFormLayout.AllNonFixedFieldsGrow)
+        layout.addRow('Enter the target link or node (i.e. CTRL01l, CTRL01n)', self.targetTxt)
+        layout.addRow('Enter the initial condition', self.initCTxt)
+        layout.addRow('Enter the ending condition', self.endCTxt)
+        layout.addRow('Enter the attack arguments', self.argTxt)
+        ###show
+        self.setLayout(layout)
+        self.setWindowTitle("Enter attack information")
+        self.setMinimumWidth(500)
+        
+class sen_window(QtWidgets.QDialog):
+    def __init__(self, cpa_dict):
+        super(sen_window, self).__init__()
+        ###Target
+        self.targetTxt = QtWidgets.QLineEdit()
+        self.targetTxt.setMinimumWidth(350)
+        ###init_cond
+        self.initCTxt = QtWidgets.QLineEdit()
+        self.initCTxt.setMinimumWidth(350)
+        ###end_cond
+        self.endCTxt = QtWidgets.QLineEdit()
+        self.endCTxt.setMinimumWidth(350)
+        ###arguments
+        self.argTxt = QtWidgets.QLineEdit()
+        self.argTxt.setMinimumWidth(350)
+        ###buttons
+        self.button_box = QtWidgets.QDialogButtonBox(QtWidgets.QDialogButtonBox.Ok | QtWidgets.QDialogButtonBox.Cancel)
+        self.button_box.accepted.connect(self.accept)
+        self.button_box.rejected.connect(self.reject)
+        ####layout
+        layout = QtWidgets.QFormLayout()
+        layout.setFieldGrowthPolicy(QtWidgets.QFormLayout.AllNonFixedFieldsGrow)
+        layout.addRow('Enter the target sensor', self.targetTxt)
+        layout.addRow('Enter the initial condition', self.initCTxt)
+        layout.addRow('Enter the ending condition', self.endCTxt)
+        layout.addRow('Enter the attack arguments', self.argTxt)
+        ###show
+        self.setLayout(layout)
+        self.setWindowTitle("Enter attack information")
+        self.setMinimumWidth(500)
+
 
 
