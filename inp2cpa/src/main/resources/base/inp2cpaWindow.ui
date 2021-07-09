@@ -6,7 +6,7 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>510</width>
+    <width>500</width>
     <height>88</height>
    </rect>
   </property>
@@ -17,9 +17,9 @@
    <widget class="QPushButton" name="importINP">
     <property name="geometry">
      <rect>
-      <x>425</x>
-      <y>9</y>
-      <width>75</width>
+      <x>490</x>
+      <y>6</y>
+      <width>90</width>
       <height>23</height>
      </rect>
     </property>
@@ -32,7 +32,7 @@
      <rect>
       <x>10</x>
       <y>10</y>
-      <width>400</width>
+      <width>480</width>
       <height>20</height>
      </rect>
     </property>
@@ -40,22 +40,22 @@
    <widget class="QPushButton" name="reassigncybernodes">
     <property name="geometry">
      <rect>
-      <x>10</x>
+      <x>0</x>
       <y>40</y>
-      <width>91</width>
+      <width>130</width>
       <height>23</height>
      </rect>
     </property>
     <property name="text">
-     <string>Re-assign nodes</string>
+     <string>Re-Assign Nodes</string>
     </property>
    </widget>
    <widget class="QPushButton" name="makeCyberLinks">
     <property name="geometry">
      <rect>
-      <x>110</x>
+      <x>120</x>
       <y>40</y>
-      <width>91</width>
+      <width>130</width>
       <height>23</height>
      </rect>
     </property>
@@ -66,9 +66,9 @@
       <widget class="QPushButton" name="addCyberAttacks">
     <property name="geometry">
      <rect>
-      <x>210</x>
+      <x>240</x>
       <y>40</y>
-      <width>91</width>
+      <width>140</width>
       <height>23</height>
      </rect>
     </property>
@@ -79,9 +79,9 @@
    <widget class="QPushButton" name="previewFileBtn">
     <property name="geometry">
      <rect>
-      <x>310</x>
+      <x>370</x>
       <y>40</y>
-      <width>91</width>
+      <width>130</width>
       <height>23</height>
      </rect>
     </property>
@@ -92,9 +92,9 @@
    <widget class="QPushButton" name="save_cpa_btn">
     <property name="geometry">
      <rect>
-      <x>410</x>
+      <x>490</x>
       <y>40</y>
-      <width>91</width>
+      <width>90</width>
       <height>23</height>
      </rect>
     </property>
@@ -108,3 +108,4 @@
  <resources/>
  <connections/>
 </ui>
+
