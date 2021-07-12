@@ -296,7 +296,7 @@ class newPLCDialog(QtWidgets.QDialog):
     #     return list_of_new_actuators
     def parseActuatortext(self):
         list_of_new_actuators = []
-        text = self.newSensortxt.text()
+        text = self.newActuatortxt.text()
         text = text.split(',')
         for actuator in text:
             list_of_new_actuators.append(actuator)
