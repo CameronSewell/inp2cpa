@@ -5,6 +5,7 @@ from PyQt5.QtCore import QThread, pyqtSignal, pyqtSlot
 from PyQt5.QtCore import *
 from PyQt5.QtWidgets import *
 
+import re
 import wntr
 import inp2cpa
 
