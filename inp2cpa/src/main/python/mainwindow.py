@@ -182,7 +182,13 @@ class newPLCDialog(QtWidgets.QDialog):
         self.newActuatortxt = QtWidgets.QLineEdit()
         #self.newActuatortxt.setMinimumWidth(700)
         ### Warning label
+
         self.warningtxt = QtWidgets.QLabel(self.warning[self.warningNo])
+        self.warningtxt.setStyleSheet("""
+        QWidget {
+            color: red;
+            }
+        """)
         
         ### Check Changes and Update Warning Label
         def updateChanges (event):
@@ -197,24 +203,52 @@ class newPLCDialog(QtWidgets.QDialog):
         self.button_box = QtWidgets.QDialogButtonBox(QtWidgets.QDialogButtonBox.Ok | QtWidgets.QDialogButtonBox.Cancel)
         self.button_box.accepted.connect(self.accept)
         self.button_box.rejected.connect(self.reject)
+        self.button_box.addButton(self.button_check, QDialogButtonBox.ActionRole)
         
+        ### QApplication::setStyle()?? enforce style across different operating systems
 
         ## layout of the dialog
-        layout = QtWidgets.QFormLayout()
-        layout.setFieldGrowthPolicy(QtWidgets.QFormLayout.AllNonFixedFieldsGrow)
-        layout.addRow('Add PLC names seperated by \',\'', self.newPLCtxt)
-        layout.addRow('Add sensor groups seperated by a \'  \'' ' sensor lists seperated by \',\'', self.newSensortxt)
-        layout.addRow('Add actuator groups seperated by a \'  \'' ' actuator lists seperated by \',\'', self.newActuatortxt)
+        outerLayout = QtWidgets.QVBoxLayout()
+        layout = QtWidgets.QVBoxLayout()
+        buttonLayout = QtWidgets.QHBoxLayout()
+        #layout.setSpacing(0)
+        myFont = QtGui.QFont()
+        myFont.setBold(True)
+        #layout.setFieldGrowthPolicy(QtWidgets.QFormLayout.AllNonFixedFieldsGrow)
+        plcnames = QLabel('PLC Names')
+        plcnames.setFont(myFont)
+        layout.addWidget(plcnames)
+        layout.addWidget(QLabel('Separate each name by \',\''))
+        layout.addWidget(self.newPLCtxt)
+        sensors = QLabel('Sensors')
+        sensors.setFont(myFont)
+        layout.addWidget(sensors)
+        layout.addWidget(QLabel('Separate sensors within a group by \'  \'' ' separate sensor lists by \',\''))
+        layout.addWidget(self.newSensortxt)
+        actuators = QLabel('Actuators')
+        actuators.setFont(myFont)
+        layout.addWidget(actuators)
+        layout.addWidget(QLabel('Separate actuators within a group by \'  \'' ' separate actuator lists by \',\''))
+        layout.addWidget(self.newActuatortxt)
+        # layout.addWid('Add PLC names separated by \',\'', self.newPLCtxt)
+        # layout.addRow('Add sensor groups separated by a \'  \'' ' sensor lists separated by \',\'', self.newSensortxt)
+        # layout.addRow('Add actuator groups separated by a \'  \'' ' actuator lists separated by \',\'', self.newActuatortxt)
         #layout.addRow(self.button_check)
-        layout.addRow(self.warningtxt)
-        layout.addRow(self.button_check, self.button_box) ### check changes button layout?
+
+        layout.addWidget(self.warningtxt)
+        buttonLayout.addWidget(self.button_check) ### check changes button layout?
+        buttonLayout.addWidget(self.button_box)
+        #layout.addWidget(self.button_check)
+        outerLayout.addLayout(layout)
+        outerLayout.addLayout(buttonLayout)
+        self.setLayout(outerLayout)
 
         ### dialog show
-        self.setLayout(layout)
+        #self.setLayout(layout)
         self.setWindowTitle("Re-Assign Cyber Nodes")
         #self.setMinimumWidth(800) 
-        self.setFixedWidth(1100)
-        self.setFixedHeight(200)  
+        self.setFixedWidth(600)
+        self.setFixedHeight(350)  
 
     def check_changes_func(self):
         storage.list_of_new_plcs = self.parsePLCtext()
@@ -316,9 +350,9 @@ class cyberLinkDialog(QtWidgets.QDialog):
         ###Layout
         layout = QtWidgets.QFormLayout()
         layout.setFieldGrowthPolicy(QtWidgets.QFormLayout.AllNonFixedFieldsGrow)
-        layout.addRow('Add Source names seperated by \',\'', self.newSourcetxt)
-        layout.addRow('Add Destination names seperated by \',\'', self.newDestinationtxt)
-        layout.addRow('Add Sensor names seperated by \',\'', self.newSensortxt)
+        layout.addRow('Add Source names separated by \',\'', self.newSourcetxt)
+        layout.addRow('Add Destination names separated by \',\'', self.newDestinationtxt)
+        layout.addRow('Add Sensor names separated by \',\'', self.newSensortxt)
         layout.addRow('Check changes',self.button_check)
         layout.addWidget(self.button_box)
         ###Show Dialog
