@@ -1,0 +1,16 @@
+# Required
+numpy
+scipy
+networkx
+pandas
+matplotlib
+wntr
+fbs
+PyQt
+
+# Optional
+plotly
+folium
+utm
+openpyxl
+nose
