@@ -67,7 +67,7 @@ class inp2cpaApp(QtWidgets.QMainWindow):
             self.cyberTopo=inp2cpa.cyberControlRead(self.in_inpfile)
             self.cpa_dict=inp2cpa.create_topology_cpa_dict(self.cyberTopo)
         else:
-            self.inp_path.setText('Nothing imported!')
+            self.inp_path.setText('Nothing Imported!')
     
     def previewCPAfile(self):
         formated_string=self.parse_dict() 
@@ -175,15 +175,12 @@ class newPLCDialog(QtWidgets.QDialog):
 
         ### PLC field
         self.newPLCtxt = QtWidgets.QLineEdit()
-        #self.newPLCtxt.setMinimumWidth(700)
         ### Sensor field
         self.newSensortxt = QtWidgets.QLineEdit()
-        #self.newSensortxt.setMinimumWidth(700)
         ### Actuator field
         self.newActuatortxt = QtWidgets.QLineEdit()
-        #self.newActuatortxt.setMinimumWidth(700)
-        ### Warning label
 
+        ### Warning label
         self.warningtxt = QtWidgets.QLabel(self.warning[self.warningNo])
         self.warningtxt.setStyleSheet("""
         QWidget {
@@ -238,7 +235,7 @@ class newPLCDialog(QtWidgets.QDialog):
         #layout.addRow(self.button_check)
 
         layout.addWidget(self.warningtxt)
-        buttonLayout.addWidget(self.button_check) ### check changes button layout?
+        buttonLayout.addWidget(self.button_check) 
         buttonLayout.addWidget(self.button_box)
         #layout.addWidget(self.button_check)
         outerLayout.addLayout(layout)
@@ -351,33 +348,58 @@ class cyberLinkDialog(QtWidgets.QDialog):
         super(cyberLinkDialog, self).__init__()
         ###Source field
         self.newSourcetxt = QtWidgets.QLineEdit()
-        self.newSourcetxt.setMinimumWidth(700)
         ###Destination field
         self.newDestinationtxt = QtWidgets.QLineEdit()
-        self.newDestinationtxt.setMinimumWidth(700)
         ###Sensor field
         self.newSensortxt = QtWidgets.QLineEdit()
-        self.newSensortxt.setMinimumWidth(700)
         ###Check changes
         self.button_check = QtWidgets.QPushButton()
-        self.button_check.setText('Check changes')
+        self.button_check.setText('Check Changes')
         self.button_check.clicked.connect(self.link_check)
         ###Button ok/cancel
         self.button_box = QtWidgets.QDialogButtonBox(QtWidgets.QDialogButtonBox.Ok | QtWidgets.QDialogButtonBox.Cancel)
         self.button_box.accepted.connect(self.accept)
         self.button_box.rejected.connect(self.reject)
-        ###Layout
-        layout = QtWidgets.QFormLayout()
-        layout.setFieldGrowthPolicy(QtWidgets.QFormLayout.AllNonFixedFieldsGrow)
-        layout.addRow('Add Source names separated by \',\'', self.newSourcetxt)
-        layout.addRow('Add Destination names separated by \',\'', self.newDestinationtxt)
-        layout.addRow('Add Sensor names separated by \',\'', self.newSensortxt)
-        layout.addRow('Check changes',self.button_check)
-        layout.addWidget(self.button_box)
-        ###Show Dialog
-        self.setLayout(layout)
+
+        ## create layouts 
+        outerLayout = QtWidgets.QVBoxLayout()
+        layout = QtWidgets.QVBoxLayout()
+        buttonLayout = QtWidgets.QHBoxLayout()
+
+        myFont = QtGui.QFont()
+        myFont.setBold(True)
+
+        ### Label and entry layout
+        sourceNames = QLabel('Source Names')
+        sourceNames.setFont(myFont)
+        layout.addWidget(sourceNames)
+        layout.addWidget(QLabel('Separate each source name by \',\''))
+        layout.addWidget(self.newSourcetxt)
+        destinationNames = QLabel('Destination Names')
+        destinationNames.setFont(myFont)
+        layout.addWidget(destinationNames)
+        layout.addWidget(QLabel('Separate destination names by \',\''))
+        layout.addWidget(self.newDestinationtxt)
+        actuators = QLabel('Sensors')
+        actuators.setFont(myFont)
+        layout.addWidget(actuators)
+        layout.addWidget(QLabel('Separate sensor names by \',\''))
+        layout.addWidget(self.newSensortxt)
+        layout.addWidget(QLabel(""))
+
+        ### Check changes and ok/cancel buttons
+        buttonLayout.addWidget(self.button_check) 
+        buttonLayout.addWidget(self.button_box)
+
+        ### Set layouts
+        outerLayout.addLayout(layout)
+        outerLayout.addLayout(buttonLayout)
+        self.setLayout(outerLayout)
+
+        ### Set window properties
         self.setWindowTitle("Create Cyber Links")
-        self.setMinimumWidth(800)
+        self.setFixedWidth(600)
+        self.setFixedHeight(350) 
 
     def parseNewSource(self):
         list_of_sources=[]
