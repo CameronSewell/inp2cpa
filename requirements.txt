@@ -6,7 +6,7 @@ pandas
 matplotlib
 wntr
 fbs
-PyQt==5.15.2
+PyQt5
 
 # Optional
 plotly
