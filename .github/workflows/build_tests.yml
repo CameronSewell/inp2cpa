@@ -34,5 +34,5 @@ jobs:
     - name: Test with fbs run
       run: |
         fbs run &>procOut &
-        grep -q "Error" procOut && core.setFailed('Python application returns error') || kill $!
+        if grep -q "Error" procOut; then cat procOut; exit 1; else kill $!; fi
         
