@@ -17,7 +17,7 @@ import wntr.network.controls as controls
 
 
 def cyberControlRead(inp_path):
-    """cyberControlREad(inp_path) -> cyberTopology
+    """cyberControlRead(inp_path) -> cyberTopology
     
     Reads the predefined epanet controls from the inp_path (input file path) using wntr, and initializes
     a number of variables and conditions. Returns the cyber topology dictionary, which contains a name-indexed list

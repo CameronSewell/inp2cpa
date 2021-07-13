@@ -25,6 +25,7 @@ class inp2cpaApp(QtWidgets.QMainWindow):
     hasAttacks = False
 
     def __init__(self, ui):
+        """Initializes main INP2CPA window, including creating buttons linked to their respective functions. """
         QtWidgets.QMainWindow.__init__(self)
         uic.loadUi(ui, self)
         
@@ -167,7 +168,7 @@ class PreviewDialog(QtWidgets.QDialog):
         
 class newPLCDialog(QtWidgets.QDialog):
     warningNo = 0
-    warning=['', 'Warning: Format each cybernode with only one underscore', 'Warning: No PLCs entered']
+    warning=['', 'Warning: Format each sensor with only one underscore', 'Warning: Each sensor must begin with \'P_\', \'F_\', \'S_\', or \'SE_\'.']
     def __init__(self, cpa_dict):
         super(newPLCDialog, self).__init__()
         self.cpa_dict=cpa_dict
@@ -193,6 +194,7 @@ class newPLCDialog(QtWidgets.QDialog):
         ### Check Changes and Update Warning Label
         def updateChanges (event):
             self.check_changes_func()
+            print ('update changes ', self.warningNo)
             self.warningtxt.setText(self.warning[self.warningNo])
 
         ### button CHECK
@@ -266,41 +268,40 @@ class newPLCDialog(QtWidgets.QDialog):
         list_of_new_plcs=[]
         text=self.newPLCtxt.text()
         #text=text.replace(' ','')
-        if (len(text)==0):
-            self.warningNo=2
-            return list_of_new_plcs
+
         text=text.split(',')
         for plc in text:
-            if (re.search('_.*_', plc)):
-                self.warningNo=1
-            else: 
-                self.warningNo=0
-                list_of_new_plcs.append(plc)
+            list_of_new_plcs.append(plc)
+            # if (re.search('_.*_', plc)):
+            #     self.warningNo=1
+            #     list_of_new_plcs.append(plc)
+            # else: 
+            #     self.warningNo=0
+            #     list_of_new_plcs.append(plc)
         #list_of_new_plcs.append(plc)
         return list_of_new_plcs
     
-    # def parseSensortext(self):
-    #     #warning=[]
-    #     #error=[]
-    #     list_of_new_sensors=[]
-    #     text=text=self.newSensortxt.text()
-    #     text=text.replace(' ','')
-    #     start = '['
-    #     end = ']'
-    #     s=text.split(start)
-    #     list_of_new_sensors=[]
-    #     for i in s:
-    #         if i:
-    #          i=i.split(end)
-    #          list_of_new_sensors.append(i[0])
-    #     list_of_new_sensors=[x.split(',') for x in list_of_new_sensors]
-    #     return(list_of_new_sensors)
     def parseSensortext(self):
         list_of_new_sensors = []
         text = self.newSensortxt.text()
+        if (len(text)==0):
+            self.warningNo=0
+            return list_of_new_sensors
         text = text.split(',')
-        for sensor in text:
-            list_of_new_sensors.append(sensor)
+        tempWarning = 0
+        for sensorGroup in text:
+            indivSensor = sensorGroup.split(' ')
+            for sensor in indivSensor:
+                if (re.search('_.*_', sensor)):
+                    tempWarning=1
+                    print ('__ ',tempWarning)
+                if not (re.search('^S_', sensor) or re.search('^F_', sensor) or re.search('^P_', sensor) or re.search ('^SE_', sensor)):                    
+                    tempWarning=2
+                    print ('incorrect prefix ', tempWarning)
+            list_of_new_sensors.append(sensorGroup)
+        print ('final ', tempWarning)
+        self.warningNo = tempWarning
+        print('warningNo ', self.warningNo)
         return list_of_new_sensors
 
     # def parseActuatortext(self):
@@ -319,9 +320,27 @@ class newPLCDialog(QtWidgets.QDialog):
     #             list_of_new_actuators.append(i[0])
     #     list_of_new_actuators=[x.split(',') for x in list_of_new_actuators]
     #     return list_of_new_actuators
+
+       # def parseSensortext(self):
+    #     #warning=[]
+    #     #error=[]
+    #     list_of_new_sensors=[]
+    #     text=text=self.newSensortxt.text()
+    #     text=text.replace(' ','')
+    #     start = '['
+    #     end = ']'
+    #     s=text.split(start)
+    #     list_of_new_sensors=[]
+    #     for i in s:
+    #         if i:
+    #          i=i.split(end)
+    #          list_of_new_sensors.append(i[0])
+    #     list_of_new_sensors=[x.split(',') for x in list_of_new_sensors]
+    #     return(list_of_new_sensors)
+
     def parseActuatortext(self):
         list_of_new_actuators = []
-        text = self.newSensortxt.text()
+        text = self.newActuatortxt.text()
         text = text.split(',')
         for actuator in text:
             list_of_new_actuators.append(actuator)
