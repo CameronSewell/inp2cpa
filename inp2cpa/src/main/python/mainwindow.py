@@ -12,6 +12,7 @@ import inp2cpa
 
 class storage:
     def store(self):
+        """Creates lists to store the CPA file data."""
         self.list_of_new_plcs = []
         self.list_of_new_sensors = []
         self.list_of_new_actuators = []
@@ -61,6 +62,8 @@ class inp2cpaApp(QtWidgets.QMainWindow):
         
         
     def importINPfunc(self):
+        """Connected to the 'import .inp' button. 
+        Imports an .inp file. If nothing is selected, displays 'Nothing Imported!'"""
         self.in_inpfile= str(QtWidgets.QFileDialog.getOpenFileName(None, "Open .inp water network file", '.', "(*.inp)")[0])
         if self.in_inpfile: 
             self.inp_path.setText('Imported '+str(self.in_inpfile))
@@ -70,6 +73,8 @@ class inp2cpaApp(QtWidgets.QMainWindow):
             self.inp_path.setText('Nothing Imported!')
     
     def previewCPAfile(self):
+        """Connected to the 'Preview CPA File' button. 
+        This function opens the preview CPA window."""
         formated_string=self.parse_dict() 
         previewDlg=PreviewDialog(formated_string)
         if previewDlg.exec_():
@@ -77,16 +82,22 @@ class inp2cpaApp(QtWidgets.QMainWindow):
         
             
     def reassignfunc(self):
+        """Connected to the 'Re-Assign Nodes' button. 
+        This function calles the newPLCDialog function (creates the Re-Assign Cyber Nodes window)."""
         newPLCDlg=newPLCDialog(self.cpa_dict)
         if newPLCDlg.exec_():
             pass
 
     def addLinks(self):
+        """Connected to the 'Make CyberLinks' button. 
+        This function calles the CyberLinkDialog function (creates the Create Cyber Links window)."""
         newLinkDlg = cyberLinkDialog(self.cpa_dict)
         if newLinkDlg.exec_():
             pass
     
     def addAttack(self):
+        """Connected to the 'Add Cyber-Attacks' button. 
+        This function calles the cyberAttackDialog function (creates the Choose an Attack Type window)."""
         attackDlg = cyberAttackDialog(self.cpa_dict)
         if attackDlg.exec_():
             pass
@@ -95,6 +106,8 @@ class inp2cpaApp(QtWidgets.QMainWindow):
     # pass
 
     def parse_dict(self):
+        """Called by previewCPAfile. 
+        Parses imported .inp file, and creates the base/starting .cpa file from the import, stored in the storage class."""
         if inp2cpaApp.isAltered:
             formatted_string = '[CYBERNODES]\n;Name,\tSensors,\tActuators\n'
             for x in range(len(storage.list_of_new_plcs)):
@@ -137,6 +150,8 @@ class inp2cpaApp(QtWidgets.QMainWindow):
                 
     
     def saveCPAfile(self):
+        """Connected to the 'Save .cpa' button. 
+        Exports .cpa file to users location of choice."""
         name = str(QtWidgets.QFileDialog.getSaveFileName(self, 'Save File', '.', "(*.cpa)")[0])
         # print(name)
         file = open(name,'w')
@@ -146,6 +161,8 @@ class inp2cpaApp(QtWidgets.QMainWindow):
 
 class PreviewDialog(QtWidgets.QDialog):
     def __init__(self, newText):
+        """Called by the previewCPAfile function. 
+        Creates the preview window, showing the user what their .cpa file looks like."""
         super(PreviewDialog, self).__init__()
         ### 1st field
         self.TextEdit = QtWidgets.QPlainTextEdit()
@@ -170,6 +187,8 @@ class newPLCDialog(QtWidgets.QDialog):
     warningNo = 0
     warning=['', 'Warning: Format each sensor with only one underscore', 'Warning: Each sensor must begin with \'P_\', \'F_\', \'S_\', or \'SE_\'.']
     def __init__(self, cpa_dict):
+        """Called by the reassignfunc function. 
+        Creates the Re-Assign Cyber Nodes window allowing users to reassign cybernodes through the GUI."""
         super(newPLCDialog, self).__init__()
         self.cpa_dict=cpa_dict
 
@@ -250,6 +269,8 @@ class newPLCDialog(QtWidgets.QDialog):
         self.setFixedHeight(350)  
 
     def check_changes_func(self):
+        """Connected to the 'Check Changes' button. 
+        Calles parsePLCtext, parseSensortext, and parseActuatortext, and sets the return of each function to their respective lists in the storage class."""
         storage.list_of_new_plcs = self.parsePLCtext()
         print(storage.list_of_new_plcs)
         storage.list_of_new_sensors = self.parseSensortext()
@@ -260,6 +281,8 @@ class newPLCDialog(QtWidgets.QDialog):
         print(self.warningNo)
         
     def parsePLCtext(self):
+        """Called by the check_changes_func function. 
+        Splits the user's 'PLC Names' input between commas, adds the PLCs to a list, and returns the list."""
         #overwritingPLC1=False
         error=[]
         list_of_new_plcs=[]
@@ -279,6 +302,9 @@ class newPLCDialog(QtWidgets.QDialog):
         return list_of_new_plcs
     
     def parseSensortext(self):
+        """Called by the check_changes_func function.
+        Splits the user's sensor input by commas, and adds the sensors to a list. 
+        A warning is displayed if the input is potentially invalid. Returns the list."""
         list_of_new_sensors = []
         text = self.newSensortxt.text()
         if (len(text)==0):
@@ -336,6 +362,8 @@ class newPLCDialog(QtWidgets.QDialog):
     #     return(list_of_new_sensors)
 
     def parseActuatortext(self):
+        """Called by the check_changes_func function.
+        Splits the user's actuator input by commas, adds the acutators to a list, and returns the list."""
         list_of_new_actuators = []
         text = self.newActuatortxt.text()
         text = text.split(',')
@@ -402,6 +430,8 @@ class cyberLinkDialog(QtWidgets.QDialog):
         self.setFixedHeight(350) 
 
     def parseNewSource(self):
+        """Called by the link_check function. 
+        Seperates the user's input by commas, adds the sources to a list, and returns the list."""
         list_of_sources=[]
         text=self.newSourcetxt.text()
         text=text.replace(' ','')
@@ -409,7 +439,10 @@ class cyberLinkDialog(QtWidgets.QDialog):
         for source in text:
             list_of_sources.append(source)
         return list_of_sources
+
     def parseNewDestination(self):
+        """Called by the link_check function.
+        Seperates the user's input by commas, adds the destinations to a list, and returns the list."""
         list_of_destinations=[]
         text=self.newDestinationtxt.text()
         text=text.replace(' ','')
@@ -417,7 +450,10 @@ class cyberLinkDialog(QtWidgets.QDialog):
         for destination in text:
             list_of_destinations.append(destination)
         return list_of_destinations
+
     def parseNewSensor(self):
+        """Called by the link_check function.
+        Seperates the user's input by commas, adds the sensors to a list, and returns the list."""
         list_of_sensors=[]
         text=self.newSensortxt.text()
         text=text.split(',')
@@ -426,6 +462,9 @@ class cyberLinkDialog(QtWidgets.QDialog):
         return list_of_sensors
 
     def link_check(self):
+        """Called when the 'Check Changes' button is clicked.
+        Calles functions to parse the user's source, destination, and sensor inputs. 
+        Sets the lists returned by the function to their respective lists in the storage class."""
         storage.list_of_new_sources = self.parseNewSource()
         storage.list_of_new_destinations = self.parseNewDestination()
         storage.list_of_new_link_sensors = self.parseNewSensor()
@@ -436,6 +475,8 @@ class cyberLinkDialog(QtWidgets.QDialog):
 
 class cyberAttackDialog(QtWidgets.QDialog):
     def __init__(self, cpa_dict):
+        """Called by the addAttack function.
+        Creates the Choose an Attack Type window with buttons to select a type of attack to create."""
         super(cyberAttackDialog, self).__init__()
         ### Attack Type Button
         self.button_comm = QtWidgets.QPushButton()
@@ -463,10 +504,12 @@ class cyberAttackDialog(QtWidgets.QDialog):
         layout.addWidget(self.button_box)
         ###show
         self.setLayout(layout)
-        self.setWindowTitle("Choose an attack type")
+        self.setWindowTitle("Choose an Attack Type")
         self.setMinimumWidth(800)
 
     def comm_window(self): ################################## just make it its own class
+        """Called when the 'Communication' button is pressed in the Choose an Attack Type window.
+        Generates a window for creating a communication cyber attack."""
         #super(cyberAttackDialog, self).__init__()
         ###Target
         self.targetTxt = QtWidgets.QLineEdit()
@@ -497,10 +540,16 @@ class cyberAttackDialog(QtWidgets.QDialog):
         self.setMinimumWidth(500)
 
     def sen_window(self):
+        """Called when the 'Sensor' button is pressed in the Choose an Attack Type window.
+        Generates a window for creating a sensor cyber attack."""
         pass
 
     def act_window(self):
+        """Called when the 'Actuator' button is pressed in the Choose an Attack Type window.
+        Generates a window for creating an actuator cyber attack."""
         pass
 
     def con_window(self):
+        """Called when the 'Control' button is pressed in the Choose an Attack Type window.
+        Generates a window for creating a control cyber attack."""
         pass
