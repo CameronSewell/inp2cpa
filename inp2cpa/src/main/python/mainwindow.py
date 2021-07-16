@@ -181,8 +181,49 @@ class PreviewDialog(QtWidgets.QDialog):
         self.setLayout(layout)
         self.setWindowTitle(".cpa preview")
         self.setMinimumWidth(800)
-                
-        
+            
+    
+
+class CreateHelpWindow(QtWidgets.QDialog):
+    def __init__(self, text, title):
+        """Called by newPLCDialog.callHelpWindow(). Takes str for the main text, and str for the title of the window.
+        Creates a new window with additional information to help the user."""
+        super(CreateHelpWindow, self).__init__()
+        self.setWindowTitle(title)
+        self.resize(400, 500)
+        self.setMaximumSize(700, 600)
+        self.setMinimumSize(300, 400)
+
+        self.text = text
+
+        layout = QtWidgets.QVBoxLayout()
+        textLabel = ScrollLabel(self)
+        textLabel.setText(text)
+        textLabel.show()
+        layout.addWidget(textLabel)
+        self.setLayout(layout)
+
+class ScrollLabel(QScrollArea, CreateHelpWindow):
+    def __init__(self, *args, **kwargs):
+        """Called by CreateHelpWindow. Inherits QScrollArea and CreateHelpWindow.
+        Creates a scrollable widget that displays a QLabel"""
+        QScrollArea.__init__(self, *args, **kwargs)
+        self.setWidgetResizable(True)
+        content = QWidget(self)
+        self.setWidget(content)
+        self.lay = QVBoxLayout(content)
+        self.label = QLabel(content)
+        self.label.setAlignment(Qt.AlignLeft|Qt.AlignTop)
+        self.label.setWordWrap(True)
+        self.lay.addWidget(self.label)
+
+    def setText(self, text):
+        """Called by CreateHelpWindow. Takes str as a parameter.
+        A function that sets the text of the ScrollLabel."""
+        self.label.setText(text)
+
+
+
 class newPLCDialog(QtWidgets.QDialog):
     warningNo = 0
     warning=['', 'Warning: Format each sensor with only one underscore', 'Warning: Each sensor must begin with \'P_\', \'F_\', \'S_\', or \'SE_\'.']
@@ -203,15 +244,22 @@ class newPLCDialog(QtWidgets.QDialog):
         self.warningtxt = QtWidgets.QLabel(self.warning[self.warningNo])
         self.warningtxt.setStyleSheet("""
         QWidget {
-            color: red;
-            }
+            color: red;}
         """)
         
         ### Check Changes and Update Warning Label
         def updateChanges (event):
             self.check_changes_func()
-            print ('update changes ', self.warningNo)
             self.warningtxt.setText(self.warning[self.warningNo])
+
+        def callHelpWindow (event):
+            """Connected to the '?' button.
+            Calls CreateHelpWindow to create the 'Help for Re-Assigning Cyber Nodes' window."""
+            text = "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum."
+            windowTitle = "Help for Re-Assigning Cyber Nodes"
+            newWindow=CreateHelpWindow(text, windowTitle)
+            if newWindow.exec_():
+                pass
 
         ### button CHECK
         self.button_check = QtWidgets.QPushButton()
@@ -222,6 +270,20 @@ class newPLCDialog(QtWidgets.QDialog):
         self.button_box.accepted.connect(self.accept)
         self.button_box.rejected.connect(self.reject)
         self.button_box.addButton(self.button_check, QDialogButtonBox.ActionRole)
+        ### help button
+        self.helpButton = QtWidgets.QPushButton()
+        self.helpButton.setText('?')
+        self.helpButton.clicked.connect(callHelpWindow)
+
+        
+        #createHelpWindow(self.cpa_dict))
+        
+        #self.button_box.addButton(self.helpButton, QDialogButtonBox.ActionRole)
+        
+        # def callHelpWindow (self):
+        #     newHelpWindow = createHelpWindow(self.cpa_dict)
+        #     if newHelpWindow.exec_():
+        #         pass
         
         ### QApplication::setStyle()?? enforce style across different operating systems
 
@@ -233,6 +295,7 @@ class newPLCDialog(QtWidgets.QDialog):
         myFont = QtGui.QFont()
         myFont.setBold(True)
         #layout.setFieldGrowthPolicy(QtWidgets.QFormLayout.AllNonFixedFieldsGrow)
+        layout.setSpacing(1)
         plcnames = QLabel('PLC Names')
         plcnames.setFont(myFont)
         layout.addWidget(plcnames)
@@ -248,14 +311,13 @@ class newPLCDialog(QtWidgets.QDialog):
         layout.addWidget(actuators)
         layout.addWidget(QLabel('Separate actuators within a group by \'  \'' ' separate actuator lists by \',\''))
         layout.addWidget(self.newActuatortxt)
-        # layout.addWid('Add PLC names separated by \',\'', self.newPLCtxt)
-        # layout.addRow('Add sensor groups separated by a \'  \'' ' sensor lists separated by \',\'', self.newSensortxt)
-        # layout.addRow('Add actuator groups separated by a \'  \'' ' actuator lists separated by \',\'', self.newActuatortxt)
-        #layout.addRow(self.button_check)
 
         layout.addWidget(self.warningtxt)
         buttonLayout.addWidget(self.button_check) 
         buttonLayout.addWidget(self.button_box)
+        buttonLayout.addWidget(self.helpButton)
+        ##buttonLayout.setSpacing(3)
+
         #layout.addWidget(self.button_check)
         outerLayout.addLayout(layout)
         outerLayout.addLayout(buttonLayout)
@@ -264,9 +326,11 @@ class newPLCDialog(QtWidgets.QDialog):
         ### dialog show
         #self.setLayout(layout)
         self.setWindowTitle("Re-Assign Cyber Nodes")
-        #self.setMinimumWidth(800) 
-        self.setFixedWidth(600)
-        self.setFixedHeight(350)  
+        self.resize(600, 350)
+        self.setMaximumSize(900, 500)
+
+        # self.setFixedWidth(600)
+        # self.setFixedHeight(350)  
 
     def check_changes_func(self):
         """Connected to the 'Check Changes' button. 
@@ -371,9 +435,23 @@ class newPLCDialog(QtWidgets.QDialog):
             list_of_new_actuators.append(actuator)
         return list_of_new_actuators
 
+
+
 class cyberLinkDialog(QtWidgets.QDialog):
     def __init__(self, cpa_dict):
+        """Called by the addLinks function. 
+        Creates the Create Cyber Links window allowing users to create cyberlinks through the GUI."""
         super(cyberLinkDialog, self).__init__()
+
+        def callHelpWindow (event):
+            """Connected to the '?' button.
+            Calls CreateHelpWindow to create the 'Help for Creating Cyber Links' window."""
+            text = "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum."
+            windowTitle = "Help for Creating Cyber Links"
+            newWindow=CreateHelpWindow(text, windowTitle)
+            if newWindow.exec_():
+                pass
+
         ###Source field
         self.newSourcetxt = QtWidgets.QLineEdit()
         ###Destination field
@@ -388,6 +466,10 @@ class cyberLinkDialog(QtWidgets.QDialog):
         self.button_box = QtWidgets.QDialogButtonBox(QtWidgets.QDialogButtonBox.Ok | QtWidgets.QDialogButtonBox.Cancel)
         self.button_box.accepted.connect(self.accept)
         self.button_box.rejected.connect(self.reject)
+        ###Help button
+        self.helpButton = QtWidgets.QPushButton()
+        self.helpButton.setText('?')
+        self.helpButton.clicked.connect(callHelpWindow)
 
         ## create layouts 
         outerLayout = QtWidgets.QVBoxLayout()
@@ -418,6 +500,7 @@ class cyberLinkDialog(QtWidgets.QDialog):
         ### Check changes and ok/cancel buttons
         buttonLayout.addWidget(self.button_check) 
         buttonLayout.addWidget(self.button_box)
+        buttonLayout.addWidget(self.helpButton)
 
         ### Set layouts
         outerLayout.addLayout(layout)
@@ -426,8 +509,10 @@ class cyberLinkDialog(QtWidgets.QDialog):
 
         ### Set window properties
         self.setWindowTitle("Create Cyber Links")
-        self.setFixedWidth(600)
-        self.setFixedHeight(350) 
+        # self.setFixedWidth(600)
+        # self.setFixedHeight(350) 
+        self.resize(600, 350)
+        self.setMaximumSize(900, 500)
 
     def parseNewSource(self):
         """Called by the link_check function. 

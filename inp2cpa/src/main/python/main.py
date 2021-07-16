@@ -24,4 +24,3 @@ if __name__ == "__main__":
     exit_code = appctxt.run()
     sys.exit(exit_code)
     
-    
