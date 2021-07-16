@@ -83,20 +83,20 @@ class inp2cpaApp(QtWidgets.QMainWindow):
             
     def reassignfunc(self):
         """Connected to the 'Re-Assign Nodes' button. 
-        This function calles the newPLCDialog function (creates the Re-Assign Cyber Nodes window)."""
+        This function calles the newPLCDialog function (creates the Re-Assign CyberNodes window)."""
         newPLCDlg=newPLCDialog(self.cpa_dict)
         if newPLCDlg.exec_():
             pass
 
     def addLinks(self):
         """Connected to the 'Make CyberLinks' button. 
-        This function calles the CyberLinkDialog function (creates the Create Cyber Links window)."""
+        This function calles the CyberLinkDialog function (creates the Create CyberLinks window)."""
         newLinkDlg = cyberLinkDialog(self.cpa_dict)
         if newLinkDlg.exec_():
             pass
     
     def addAttack(self):
-        """Connected to the 'Add Cyber-Attacks' button. 
+        """Connected to the 'Add CyberAttacks' button. 
         This function calles the cyberAttackDialog function (creates the Choose an Attack Type window)."""
         attackDlg = cyberAttackDialog(self.cpa_dict)
         if attackDlg.exec_():
@@ -206,7 +206,7 @@ class CreateHelpWindow(QtWidgets.QDialog):
 class ScrollLabel(QScrollArea, CreateHelpWindow):
     def __init__(self, *args, **kwargs):
         """Called by CreateHelpWindow. Inherits QScrollArea and CreateHelpWindow.
-        Creates a scrollable widget that displays a QLabel"""
+        Creates a scrollable widget that displays a QLabel."""
         QScrollArea.__init__(self, *args, **kwargs)
         self.setWidgetResizable(True)
         content = QWidget(self)
@@ -229,7 +229,7 @@ class newPLCDialog(QtWidgets.QDialog):
     warning=['', 'Warning: Format each sensor with only one underscore', 'Warning: Each sensor must begin with \'P_\', \'F_\', \'S_\', or \'SE_\'.']
     def __init__(self, cpa_dict):
         """Called by the reassignfunc function. 
-        Creates the Re-Assign Cyber Nodes window allowing users to reassign cybernodes through the GUI."""
+        Creates the Re-Assign CyberNodes window allowing users to reassign cybernodes through the GUI."""
         super(newPLCDialog, self).__init__()
         self.cpa_dict=cpa_dict
 
@@ -254,9 +254,52 @@ class newPLCDialog(QtWidgets.QDialog):
 
         def callHelpWindow (event):
             """Connected to the '?' button.
-            Calls CreateHelpWindow to create the 'Help for Re-Assigning Cyber Nodes' window."""
-            text = "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum."
-            windowTitle = "Help for Re-Assigning Cyber Nodes"
+            Calls CreateHelpWindow to create the 'Help for Re-Assigning CyberNodes' window."""
+            text = ("Re-Assigning CyberNodes\n" 
+                    "   This window assists in reassigning PLCs to their respective sensors and acutuators. "
+                    "The inputs saved from this screen will replace the current CyberNode data for the new .cpa file.\n\n"
+                    "'PLC Names' Field\n"
+                    "   Enter PLC names into the first input field, with each name separated by a comma. Do not use a space "
+                    "between the names, as the space will become part of the PLC name.\n\n"
+                    "Example: \n"
+                    "PLC Names: PLC1,PLC2\n\n"
+                    "'Sensors' Field\n"
+                    "   Enter sensors in the same order as their PLCs were entered. "
+                    "The PLCs are linked to the sensors based on the order they are listed in. If multiple sensors are linked to one PLC, "
+                    "separate the sensors with a space (' '). To link a sensor to the next PLC in the list, separate the sensors with a "
+                    "comma (','). Do not use multiple spaces, or a space and a comma, to separate the sensors, as the space will be aded to the sensor name. "
+                    "It is highly suggested that PLC names begin with 'P_', 'S_', 'F_', or 'SE_' to be properly processed and correctly formatted. "
+                    "'P_' indicates a sensor montitoring pressure, 'S_' indicates a sensor monitoring status, 'F_' indicates a sensor monitoring flow, "
+                    "and 'SE_' indicates a sensor monitoring settings of pumps and valves. Each letter of these prefixes must be capitalized.\n\n"
+                    "Example:\n"
+                    "PLC Names: PLC1,PLC2\n"
+                    "Sensors: P_TANK,S_PUMP1 S_PUMP2\n\n"
+                    "   In the above example, PLC1 is connected to the P_TANK sensor, and PLC2 is connected to both sensors S_PUMP1 and S_PUMP2.\n"
+                    "   P_TANK is a sensor responsible for monitoring the pressure of the tank, while S_PUMP1 is the sensor monitoring "
+                    "the status of PUMP1 and S_PUMP2 is the sensor monitoring the status of PUMP2.\n\n"
+                    "'Actuators' Field\n"
+                    "   Enter the actuators in the same order as their PLCs were entered. "
+                    "The PLS are linked to the actuators based on the order they are listed in. If multiple actuators are linked to one PLC, "
+                    "separate the actuators with a space (' '). To link an actuator to the next PLC in the list, separate the actuators with a "
+                    "comma (','). Do not use multiple spaces, or a space and a comma, to separate the actuators as the space will be added to the actuator name. \n\n"
+                    "Example:\n"
+                    "PLC Names: PLC1,PLC2\n"
+                    "Sensors: P_TANK,S_PUMP1 S_PUMP2\n"
+                    "Actuators:  ,PUMP1 PUMP2\n\n"
+                    "   In the above example, PLC1 is not connected to any actuators, and PLC2 is connected to the actuators called PUMP1 and PUMP2.\n\n"
+                    "'Check Changes' Button\n"
+                    "   After all of the information is entered, click 'Check Changes' to identify any potetial problems with the input. "
+                    "After the changes have been checked, click 'Ok' to submit the changes.\n\n" 
+                    "Full Example: \n"
+                    "PLC Names: PLC1,PLC2\n"
+                    "Sensors: P_TANK,S_PUMP1 S_PUMP2\n"
+                    "Actuators:  ,PUMP1 PUMP2\n\n"
+                    "After clicking 'Ok', the [CYBERNODE] section of the .cpa file should look like this:\n"
+                    ";Name, Sensors,    Actuators\n"
+                    "PLC1,  P_TANK\n"
+                    "PLC2,  S_PUMP1 S_PUMP2,    PUMP1 PUMP2")
+
+            windowTitle = "Help for Re-Assigning CyberNodes"
             newWindow=CreateHelpWindow(text, windowTitle)
             if newWindow.exec_():
                 pass
@@ -325,7 +368,7 @@ class newPLCDialog(QtWidgets.QDialog):
 
         ### dialog show
         #self.setLayout(layout)
-        self.setWindowTitle("Re-Assign Cyber Nodes")
+        self.setWindowTitle("Re-Assign CyberNodes")
         self.resize(600, 350)
         self.setMaximumSize(900, 500)
 
@@ -440,14 +483,14 @@ class newPLCDialog(QtWidgets.QDialog):
 class cyberLinkDialog(QtWidgets.QDialog):
     def __init__(self, cpa_dict):
         """Called by the addLinks function. 
-        Creates the Create Cyber Links window allowing users to create cyberlinks through the GUI."""
+        Creates the Create CyberLinks window allowing users to create cyberlinks through the GUI."""
         super(cyberLinkDialog, self).__init__()
 
         def callHelpWindow (event):
             """Connected to the '?' button.
-            Calls CreateHelpWindow to create the 'Help for Creating Cyber Links' window."""
+            Calls CreateHelpWindow to create the 'Help for Creating CyberLinks' window."""
             text = "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum."
-            windowTitle = "Help for Creating Cyber Links"
+            windowTitle = "Help for Creating CyberLinks"
             newWindow=CreateHelpWindow(text, windowTitle)
             if newWindow.exec_():
                 pass
@@ -508,7 +551,7 @@ class cyberLinkDialog(QtWidgets.QDialog):
         self.setLayout(outerLayout)
 
         ### Set window properties
-        self.setWindowTitle("Create Cyber Links")
+        self.setWindowTitle("Create CyberLinks")
         # self.setFixedWidth(600)
         # self.setFixedHeight(350) 
         self.resize(600, 350)
@@ -594,7 +637,7 @@ class cyberAttackDialog(QtWidgets.QDialog):
 
     def comm_window(self): ################################## just make it its own class
         """Called when the 'Communication' button is pressed in the Choose an Attack Type window.
-        Generates a window for creating a communication cyber attack."""
+        Generates a window for creating a communication CyberAttack."""
         #super(cyberAttackDialog, self).__init__()
         ###Target
         self.targetTxt = QtWidgets.QLineEdit()
@@ -626,15 +669,15 @@ class cyberAttackDialog(QtWidgets.QDialog):
 
     def sen_window(self):
         """Called when the 'Sensor' button is pressed in the Choose an Attack Type window.
-        Generates a window for creating a sensor cyber attack."""
+        Generates a window for creating a sensor CyberAttack."""
         pass
 
     def act_window(self):
         """Called when the 'Actuator' button is pressed in the Choose an Attack Type window.
-        Generates a window for creating an actuator cyber attack."""
+        Generates a window for creating an actuator CyberAttack."""
         pass
 
     def con_window(self):
         """Called when the 'Control' button is pressed in the Choose an Attack Type window.
-        Generates a window for creating a control cyber attack."""
+        Generates a window for creating a control CyberAttack."""
         pass

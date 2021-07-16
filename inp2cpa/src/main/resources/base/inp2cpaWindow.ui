@@ -73,7 +73,7 @@
      </rect>
     </property>
     <property name="text">
-     <string>Add Cyber-Attack</string>
+     <string>Add CyberAttack</string>
     </property>
    </widget>
    <widget class="QPushButton" name="previewFileBtn">
