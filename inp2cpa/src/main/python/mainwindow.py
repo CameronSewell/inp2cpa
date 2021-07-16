@@ -489,7 +489,30 @@ class cyberLinkDialog(QtWidgets.QDialog):
         def callHelpWindow (event):
             """Connected to the '?' button.
             Calls CreateHelpWindow to create the 'Help for Creating CyberLinks' window."""
-            text = "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum."
+            text = ("Creating CyberLinks\n"
+            "   This window assists in creating CyberLinks between source and destination nodes. If CyberLinks have already been """
+            "created, the CyberLinks saved from this window will replace the current CyberLinks in the .cpa file.\n\n"
+            "'Source Names' Field\n"
+            "   Enter the sources into the text field, separated by commas. Sources should not be separated by spaces, "
+            "or a comma and a space, as the space will be added to the source name.\n\n"
+            "'Destination Names' Field\n"
+            "   Enter the destinations into the text field, separated by commas. The destinations should be listed in the same "
+            "order as their corresponding sources. Destinations should not be separated by spaces, "
+            "or a comma and a space, as the space will be added to the destination name.\n\n"
+            "'Sensors' Field\n"
+            "   Enter the sensors into the text field, separated by commas. The sensors should be listed in the same "
+            "order as their corresponding sources. Sensors should not be separated by spaces, "
+            "or a comma and a space, as the space will be added to the source name.\n\n"
+            "Example: \n"
+            "Source Names: PLC1,PLC1\n"
+            "Destination Names: PLC2,SCADA\n"
+            "Sensors: P_TANK,P_TANK\n\n"
+            "   In the above example, there is a CyberLink from PLC1 to PLC2, sending information collected by the P_TANK sensor, "
+            "and a CyberLink from PLC1 to SCADA, also sending information collected the P_TANK sensor.\n\n"
+            "   After the changes are submitted by selecting the 'Ok' button, the new .cpa file [CYBERLINKS] section should read:\n"
+            ";Source, Destination, Sensors\n"
+            "PLC1,  PLC2,   P_TANK\n"
+            "PLC1,  SCADA,  P_TANK")
             windowTitle = "Help for Creating CyberLinks"
             newWindow=CreateHelpWindow(text, windowTitle)
             if newWindow.exec_():
