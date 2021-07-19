@@ -7,6 +7,7 @@ from PyQt5.QtCore import *
 from PyQt5.QtWidgets import *
 import re
 
+import re
 import wntr
 import inp2cpa
 
@@ -193,9 +194,7 @@ class CreateHelpWindow(QtWidgets.QDialog):
         self.resize(400, 500)
         self.setMaximumSize(700, 600)
         self.setMinimumSize(300, 400)
-
         self.text = text
-
         layout = QtWidgets.QVBoxLayout()
         textLabel = ScrollLabel(self)
         textLabel.setText(text)
@@ -227,26 +226,52 @@ class ScrollLabel(QScrollArea, CreateHelpWindow):
 class newPLCDialog(QtWidgets.QDialog):
     warningNo = 0
     warning=['', 'Warning: Format each sensor with only one underscore', 'Warning: Each sensor must begin with \'P_\', \'F_\', \'S_\', or \'SE_\'.']
+        self.setMinimumWidth(800)        
+        
+class PreviewDialog(QtWidgets.QDialog):
+    def __init__(self, newText):
+        super(PreviewDialog, self).__init__()
+        ### 1st field
+        self.TextEdit = QtWidgets.QPlainTextEdit()
+        self.TextEdit.appendPlainText(newText)
+        self.TextEdit.setMinimumWidth(700)
+        ### buttons ok/cancel
+        self.button_box = QtWidgets.QDialogButtonBox(QtWidgets.QDialogButtonBox.Ok | QtWidgets.QDialogButtonBox.Cancel)
+        self.button_box.accepted.connect(self.accept)
+        self.button_box.rejected.connect(self.reject)
+        ### layout of the dalog
+        layout = QtWidgets.QFormLayout()
+        layout.setFieldGrowthPolicy(QtWidgets.QFormLayout.AllNonFixedFieldsGrow)
+        layout.addRow('CPA file preview:', self.TextEdit)
+        layout.addWidget(self.button_box)
+        ### dialog show
+        self.setLayout(layout)
+        self.setWindowTitle(".cpa preview")
+        self.setMinimumWidth(800)        
+        
+class newPLCDialog(QtWidgets.QDialog):
+    warningNo = 0
+    warning=['', 'Warning: Format each cybernode with only one underscore', 'Warning: No PLCs entered']
     def __init__(self, cpa_dict):
         """Called by the reassignfunc function. 
         Creates the Re-Assign CyberNodes window allowing users to reassign cybernodes through the GUI."""
         super(newPLCDialog, self).__init__()
         self.cpa_dict=cpa_dict
-
+        self.setFixedWidth(1200)
+        self.setFixedHeight(200)
         ### PLC field
         self.newPLCtxt = QtWidgets.QLineEdit()
         ### Sensor field
         self.newSensortxt = QtWidgets.QLineEdit()
         ### Actuator field
         self.newActuatortxt = QtWidgets.QLineEdit()
-
         ### Warning label
         self.warningtxt = QtWidgets.QLabel(self.warning[self.warningNo])
         self.warningtxt.setStyleSheet("""
-        QWidget {
-            color: red;}
-        """)
-        
+        QWidget {color: red;}""")
+        self.newActuatortxt.setMinimumWidth(700)
+        ### Warning label
+        self.warningtxt = QtWidgets.QLabel(self.warning[self.warningNo])
         ### Check Changes and Update Warning Label
         def updateChanges (event):
             self.check_changes_func()
@@ -303,7 +328,6 @@ class newPLCDialog(QtWidgets.QDialog):
             newWindow=CreateHelpWindow(text, windowTitle)
             if newWindow.exec_():
                 pass
-
         ### button CHECK
         self.button_check = QtWidgets.QPushButton()
         self.button_check.setText('Check Changes')
@@ -317,19 +341,13 @@ class newPLCDialog(QtWidgets.QDialog):
         self.helpButton = QtWidgets.QPushButton()
         self.helpButton.setText('?')
         self.helpButton.clicked.connect(callHelpWindow)
-
-        
         #createHelpWindow(self.cpa_dict))
-        
         #self.button_box.addButton(self.helpButton, QDialogButtonBox.ActionRole)
-        
         # def callHelpWindow (self):
         #     newHelpWindow = createHelpWindow(self.cpa_dict)
         #     if newHelpWindow.exec_():
         #         pass
-        
         ### QApplication::setStyle()?? enforce style across different operating systems
-
         ## layout of the dialog
         outerLayout = QtWidgets.QVBoxLayout()
         layout = QtWidgets.QVBoxLayout()
@@ -354,26 +372,35 @@ class newPLCDialog(QtWidgets.QDialog):
         layout.addWidget(actuators)
         layout.addWidget(QLabel('Separate actuators within a group by \'  \'' ' separate actuator lists by \',\''))
         layout.addWidget(self.newActuatortxt)
-
         layout.addWidget(self.warningtxt)
         buttonLayout.addWidget(self.button_check) 
         buttonLayout.addWidget(self.button_box)
         buttonLayout.addWidget(self.helpButton)
         ##buttonLayout.setSpacing(3)
-
         #layout.addWidget(self.button_check)
         outerLayout.addLayout(layout)
         outerLayout.addLayout(buttonLayout)
         self.setLayout(outerLayout)
-
         ### dialog show
         #self.setLayout(layout)
         self.setWindowTitle("Re-Assign CyberNodes")
         self.resize(600, 350)
         self.setMaximumSize(900, 500)
-
         # self.setFixedWidth(600)
-        # self.setFixedHeight(350)  
+        # self.setFixedHeight(350)
+        ## layout of the dialog
+        layout = QtWidgets.QFormLayout()
+        layout.setFieldGrowthPolicy(QtWidgets.QFormLayout.AllNonFixedFieldsGrow)
+        layout.addRow('Add PLC names seperated by \',\'', self.newPLCtxt)
+        layout.addRow('Add sensor groups seperated by a \'  \'' ' sensor lists seperated by \',\'', self.newSensortxt)
+        layout.addRow('Add actuator groups seperated by a \'  \'' ' actuator lists seperated by \',\'', self.newActuatortxt)
+        layout.addRow('Check changes',self.button_check)
+        layout.addWidget(self.button_box)
+        layout.addWidget(self.warningtxt)
+        ### dialog show
+        self.setLayout(layout)
+        self.setWindowTitle("Re-Assign Cyber Nodes")
+        self.setMinimumWidth(800)
 
     def check_changes_func(self):
         """Connected to the 'Check Changes' button. 
@@ -395,9 +422,14 @@ class newPLCDialog(QtWidgets.QDialog):
         list_of_new_plcs=[]
         text=self.newPLCtxt.text()
         #text=text.replace(' ','')
-
+        if (len(text)==0):
+            self.warningNo=2
         text=text.split(',')
         for plc in text:
+            if (re.search('_.*_', plc)):
+                self.warningNo=1
+            if (len(text)==0):
+                self.warningNo=2
             list_of_new_plcs.append(plc)
             # if (re.search('_.*_', plc)):
             #     self.warningNo=1
@@ -658,10 +690,32 @@ class cyberAttackDialog(QtWidgets.QDialog):
         self.setWindowTitle("Choose an Attack Type")
         self.setMinimumWidth(800)
 
+
     def comm_window(self): ################################## just make it its own class
         """Called when the 'Communication' button is pressed in the Choose an Attack Type window.
         Generates a window for creating a communication CyberAttack."""
         #super(cyberAttackDialog, self).__init__()
+
+    def call_sen(self):
+        s = sen_window(self)
+        if s.exec_():
+            pass
+    def call_act(self):
+        at = act_window(self)
+        if at.exec_():
+            pass
+    def call_con(self):
+        co = con_window(self)
+        if co.exec_():
+            pass
+    def call_comm(self):
+        cw = comm_window(self)
+        if cw.exec_():
+            pass
+
+class comm_window(QtWidgets.QDialog): 
+    def __init__(self, cpa_dict):
+        super(comm_window, self).__init__()
         ###Target
         self.targetTxt = QtWidgets.QLineEdit()
         self.targetTxt.setMinimumWidth(350)
@@ -699,6 +753,99 @@ class cyberAttackDialog(QtWidgets.QDialog):
         """Called when the 'Actuator' button is pressed in the Choose an Attack Type window.
         Generates a window for creating an actuator CyberAttack."""
         pass
+
+class act_window(QtWidgets.QDialog):
+    def __init__(self, cpa_dict):
+        super(act_window, self).__init__()
+        ###Target
+        self.targetTxt = QtWidgets.QLineEdit()
+        self.targetTxt.setMinimumWidth(350)
+        ###init_cond
+        self.initCTxt = QtWidgets.QLineEdit()
+        self.initCTxt.setMinimumWidth(350)
+        ###end_cond
+        self.endCTxt = QtWidgets.QLineEdit()
+        self.endCTxt.setMinimumWidth(350)
+        ###arguments
+        self.argTxt = QtWidgets.QLineEdit()
+        self.argTxt.setMinimumWidth(350)
+        ###buttons
+        self.button_box = QtWidgets.QDialogButtonBox(QtWidgets.QDialogButtonBox.Ok | QtWidgets.QDialogButtonBox.Cancel)
+        self.button_box.accepted.connect(self.accept)
+        self.button_box.rejected.connect(self.reject)
+        ####layout
+        layout = QtWidgets.QFormLayout()
+        layout.setFieldGrowthPolicy(QtWidgets.QFormLayout.AllNonFixedFieldsGrow)
+        layout.addRow('Enter the target actuator', self.targetTxt)
+        layout.addRow('Enter the initial condition', self.initCTxt)
+        layout.addRow('Enter the ending condition', self.endCTxt)
+        layout.addRow('Enter the attack arguments', self.argTxt)
+        ###show
+        self.setLayout(layout)
+        self.setWindowTitle("Enter attack information")
+        self.setMinimumWidth(500)
+        
+class con_window(QtWidgets.QDialog):
+    def __init__(self, cpa_dict):
+        super(con_window, self).__init__()
+        ###Target
+        self.targetTxt = QtWidgets.QLineEdit()
+        self.targetTxt.setMinimumWidth(350)
+        ###init_cond
+        self.initCTxt = QtWidgets.QLineEdit()
+        self.initCTxt.setMinimumWidth(350)
+        ###end_cond
+        self.endCTxt = QtWidgets.QLineEdit()
+        self.endCTxt.setMinimumWidth(350)
+        ###arguments
+        self.argTxt = QtWidgets.QLineEdit()
+        self.argTxt.setMinimumWidth(350)
+        ###buttons
+        self.button_box = QtWidgets.QDialogButtonBox(QtWidgets.QDialogButtonBox.Ok | QtWidgets.QDialogButtonBox.Cancel)
+        self.button_box.accepted.connect(self.accept)
+        self.button_box.rejected.connect(self.reject)
+        ####layout
+        layout = QtWidgets.QFormLayout()
+        layout.setFieldGrowthPolicy(QtWidgets.QFormLayout.AllNonFixedFieldsGrow)
+        layout.addRow('Enter the target link or node (i.e. CTRL01l, CTRL01n)', self.targetTxt)
+        layout.addRow('Enter the initial condition', self.initCTxt)
+        layout.addRow('Enter the ending condition', self.endCTxt)
+        layout.addRow('Enter the attack arguments', self.argTxt)
+        ###show
+        self.setLayout(layout)
+        self.setWindowTitle("Enter attack information")
+        self.setMinimumWidth(500)
+        
+class sen_window(QtWidgets.QDialog):
+    def __init__(self, cpa_dict):
+        super(sen_window, self).__init__()
+        ###Target
+        self.targetTxt = QtWidgets.QLineEdit()
+        self.targetTxt.setMinimumWidth(350)
+        ###init_cond
+        self.initCTxt = QtWidgets.QLineEdit()
+        self.initCTxt.setMinimumWidth(350)
+        ###end_cond
+        self.endCTxt = QtWidgets.QLineEdit()
+        self.endCTxt.setMinimumWidth(350)
+        ###arguments
+        self.argTxt = QtWidgets.QLineEdit()
+        self.argTxt.setMinimumWidth(350)
+        ###buttons
+        self.button_box = QtWidgets.QDialogButtonBox(QtWidgets.QDialogButtonBox.Ok | QtWidgets.QDialogButtonBox.Cancel)
+        self.button_box.accepted.connect(self.accept)
+        self.button_box.rejected.connect(self.reject)
+        ####layout
+        layout = QtWidgets.QFormLayout()
+        layout.setFieldGrowthPolicy(QtWidgets.QFormLayout.AllNonFixedFieldsGrow)
+        layout.addRow('Enter the target sensor', self.targetTxt)
+        layout.addRow('Enter the initial condition', self.initCTxt)
+        layout.addRow('Enter the ending condition', self.endCTxt)
+        layout.addRow('Enter the attack arguments', self.argTxt)
+        ###show
+        self.setLayout(layout)
+        self.setWindowTitle("Enter attack information")
+        self.setMinimumWidth(500)
 
     def con_window(self):
         """Called when the 'Control' button is pressed in the Choose an Attack Type window.
