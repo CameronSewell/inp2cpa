@@ -184,6 +184,7 @@ class inp2cpaApp(QtWidgets.QDialog):
             while (temp == False):
                 temp = previewBox.hasFocus()
                 print (temp)
+                previewBox.setFocus()
             if (temp):
                 formatted_string = parse_dict(self)
                 print ('formattedString')
