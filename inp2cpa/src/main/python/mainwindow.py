@@ -135,22 +135,21 @@ class inp2cpaApp(QtWidgets.QDialog):
                 return formatted_string   
 
         def reassignfunc(self):
-            """Connected to the 'Re-Assign Nodes' button. 
+            """Connected to the 'Re-Assign CyberNodes' button. 
             This function calles the newPLCDialog function (creates the Re-Assign CyberNodes window)."""
-            print ('created')
             newPLCDlg=newPLCDialog(cpa_dict)
             if newPLCDlg.exec_():
                 pass
 
         def addLinks(self):
-            """Connected to the 'Make CyberLinks' button. 
+            """Connected to the 'Create CyberLinks' button. 
             This function calles the CyberLinkDialog function (creates the Create CyberLinks window)."""
             newLinkDlg = cyberLinkDialog(cpa_dict)
             if newLinkDlg.exec_():
                 pass
         
         def addAttack(self):
-            """Connected to the 'Add CyberAttacks' button. 
+            """Connected to the 'Create CyberAttacks' button. 
             This function calles the cyberAttackDialog function (creates the Choose an Attack Type window)."""
             attackDlg = cyberAttackDialog(cpa_dict)
             if attackDlg.exec_():
@@ -159,7 +158,9 @@ class inp2cpaApp(QtWidgets.QDialog):
         def saveCPAfile(self):
             """Connected to the 'Save .cpa' button. 
             Exports .cpa file to users location of choice."""
-            name = str(QtWidgets.QFileDialog.getSaveFileName(self, 'Save File', '.', "(*.cpa)")[0])
+            # name = QtWidgets.QFileDialog.getSaveFileName(self, 'Save File', '.', "(*.cpa)")[0]
+            name = QtWidgets.QFileDialog.getSaveFileName(self, 'QFileDialog.getSaveFileName()', '', '.', "(*.cpa)")[0]
+            # name = (self, "QFileDialog.getSaveFileName()","","All Files (*);;Text Files (*.txt)", options=options)
             print(name)
             file = open(name,'w')
             text = self.TextToExport
@@ -184,6 +185,7 @@ class inp2cpaApp(QtWidgets.QDialog):
             while (temp == False):
                 temp = previewBox.hasFocus()
                 print (temp)
+                previewBox.setFocus()
             if (temp):
                 formatted_string = parse_dict(self)
                 print ('formattedString')
