@@ -26,6 +26,7 @@ class storage:
 
 class importWindow(QtWidgets.QDialog):
     def __init__(self):
+        """Opens the Import .inp window to allow the user to select an inp. file."""
         QtWidgets.QMainWindow.__init__(self)
         self.setWindowTitle('INP2CPA - Import .inp')
         self.setFixedHeight(140)
@@ -74,6 +75,8 @@ class importWindow(QtWidgets.QDialog):
         self.setLayout(outerLayout)
         
     def mainWindow (self):
+        """Linked to the Ok button.
+        Creates the main inp2cpaApp window."""
         global cpa_dict
         self.close()
         newinp2cpaApp=inp2cpaApp(cpa_dict)
@@ -85,6 +88,7 @@ class inp2cpaApp(QtWidgets.QDialog):
     hasCyberLinks = False 
     hasAttacks = False
     def __init__(self, cpa_dict):
+        """Initializes main INP2CPA window, including creating buttons linked to their respective functions. """
         super(inp2cpaApp, self).__init__()
         self.setWindowTitle('INP2CPA - ' + pathName)
         self.cpa_dict = cpa_dict
@@ -158,9 +162,7 @@ class inp2cpaApp(QtWidgets.QDialog):
         def saveCPAfile(self):
             """Connected to the 'Save .cpa' button. 
             Exports .cpa file to users location of choice."""
-            # name = QtWidgets.QFileDialog.getSaveFileName(self, 'Save File', '.', "(*.cpa)")[0]
-            name = QtWidgets.QFileDialog.getSaveFileName(self, 'QFileDialog.getSaveFileName()', '', '.', "(*.cpa)")[0]
-            # name = (self, "QFileDialog.getSaveFileName()","","All Files (*);;Text Files (*.txt)", options=options)
+            name = str(QtWidgets.QFileDialog.getSaveFileName(self, 'Save File', '.', "(*.cpa)")[0])
             print(name)
             file = open(name,'w')
             text = self.TextToExport
@@ -180,6 +182,8 @@ class inp2cpaApp(QtWidgets.QDialog):
         verticalSpacer = QtWidgets.QSpacerItem(60, 10, QtWidgets.QSizePolicy.Minimum, QtWidgets.QSizePolicy.Expanding) 
         
         def updatePreview (self):
+            """Called bythe Re-Assign CyberNodes and Create CyberLinks buttons.
+            Creates a while loop, checking to see when the main window is refocused, and then updates the .cpa preview text."""
             print ('updatePreview called')
             temp = False
             while (temp == False):
@@ -214,8 +218,6 @@ class inp2cpaApp(QtWidgets.QDialog):
         outerLayout.addLayout(buttonLayout)
         self.setLayout(outerLayout)
         
-
-    
 # class inp2cpaApp(QtWidgets.QMainWindow):
 #     # QApplication.setStyle('Fusion')
 #     isAltered = False
@@ -426,7 +428,7 @@ class ScrollLabel(QScrollArea, CreateHelpWindow):
 
 class newPLCDialog(QtWidgets.QDialog):
     warningNo = 0
-    warning=['', 'Warning: Format each sensor with only one underscore', 'Warning: Each sensor must begin with \'P_\', \'F_\', \'S_\', or \'SE_\'.']
+    warning=['', 'Warning: Format each sensor with only one underscore', 'Warning: Each sensor should begin with \'P_\', \'F_\', \'S_\', or \'SE_\'.']
 
     def __init__(self, cpa_dict):
         """Called by the reassignfunc function. 
