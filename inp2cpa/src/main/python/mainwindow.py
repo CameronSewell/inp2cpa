@@ -272,11 +272,27 @@ class newPLCDialog(QtWidgets.QDialog):
     #     list_of_new_sensors=[x.split(',') for x in list_of_new_sensors]
     #     return(list_of_new_sensors)
     def parseSensortext(self):
+        """Called by the check_changes_func function.
+        Splits the user's sensor input by commas, and adds the sensors to a list. 
+        A warning is displayed if the input is potentially invalid. Returns the list."""
         list_of_new_sensors = []
         text = self.newSensortxt.text()
+        if (len(text)==0):
+            self.warningNo=0
+            return list_of_new_sensors
         text = text.split(',')
-        for sensor in text:
-            list_of_new_sensors.append(sensor)
+        tempWarning = 0
+        for sensorGroup in text:
+            indivSensor = sensorGroup.split(' ')
+            for sensor in indivSensor:
+                if (re.search('_.*_', sensor)):
+                    tempWarning=1
+                    # print ('__ ',tempWarning)
+                if not (re.search('^S_', sensor) or re.search('^F_', sensor) or re.search('^P_', sensor) or re.search ('^SE_', sensor)):                    
+                    tempWarning=2
+                    # print ('incorrect prefix ', tempWarning)
+            list_of_new_sensors.append(sensorGroup)
+        self.warningNo = tempWarning
         return list_of_new_sensors
 
     # def parseActuatortext(self):
@@ -295,7 +311,10 @@ class newPLCDialog(QtWidgets.QDialog):
     #             list_of_new_actuators.append(i[0])
     #     list_of_new_actuators=[x.split(',') for x in list_of_new_actuators]
     #     return list_of_new_actuators
+    #TODO: Add futher parsing of text in the style of parseSensorText
     def parseActuatortext(self):
+        """Called by the check_changes_func function.
+        Splits the user's actuator input by commas, adds the acutators to a list, and returns the list."""
         list_of_new_actuators = []
         text = self.newActuatortxt.text()
         text = text.split(',')
@@ -337,6 +356,8 @@ class newPLCDialog(QtWidgets.QDialog):
         ##self.setMinimumWidth(800)
 class cyberAttackDialog(QtWidgets.QDialog):
     def __init__(self, cpa_dict):
+        """Called by the addAttack function.
+        Creates the Choose an Attack Type window with buttons to select a type of attack to create."""
         super(cyberAttackDialog, self).__init__()
         ### Attack Type Button
         self.button_comm = QtWidgets.QPushButton()
@@ -386,6 +407,8 @@ class cyberAttackDialog(QtWidgets.QDialog):
 
 class comm_window(QtWidgets.QDialog): 
     def __init__(self, cpa_dict):
+        """Called when the 'Communication' button is pressed in the Choose an Attack Type window.
+        Generates a window for creating a communication CyberAttack."""
         super(comm_window, self).__init__()
         ###Target
         self.targetTxt = QtWidgets.QLineEdit()
@@ -433,6 +456,8 @@ class comm_window(QtWidgets.QDialog):
 
 class act_window(QtWidgets.QDialog):
     def __init__(self, cpa_dict):
+        """Called when the 'Actuator' button is pressed in the Choose an Attack Type window.
+        Generates a window for creating an actuator CyberAttack."""
         super(act_window, self).__init__()
         ###Target
         self.targetTxt = QtWidgets.QLineEdit()
@@ -480,6 +505,8 @@ class act_window(QtWidgets.QDialog):
 
 class con_window(QtWidgets.QDialog):
     def __init__(self, cpa_dict):
+        """Called when the 'Control' button is pressed in the Choose an Attack Type window.
+        Generates a window for creating a control CyberAttack."""
         super(con_window, self).__init__()
         ###Target
         self.targetTxt = QtWidgets.QLineEdit()
@@ -527,6 +554,8 @@ class con_window(QtWidgets.QDialog):
 
 class sen_window(QtWidgets.QDialog):
     def __init__(self, cpa_dict):
+        """Called when the 'Sensor' button is pressed in the Choose an Attack Type window.
+        Generates a window for creating a sensor CyberAttack."""
         super(sen_window, self).__init__()
         ###Target
         self.targetTxt = QtWidgets.QLineEdit()
