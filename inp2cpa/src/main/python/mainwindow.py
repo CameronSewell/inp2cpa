@@ -303,72 +303,38 @@ class newPLCDialog(QtWidgets.QDialog):
             list_of_new_actuators.append(actuator)
         return list_of_new_actuators
 
-class cyberLinkDialog(QtWidgets.QDialog):
-    def __init__(self, cpa_dict):
-        super(cyberLinkDialog, self).__init__()
+##class cyberLinkDialog(QtWidgets.QDialog):
+   ## def __init__(self, cpa_dict):
+       ## super(cyberLinkDialog, self).__init__()
         ###Source field
-        self.newSourcetxt = QtWidgets.QLineEdit()
-        self.newSourcetxt.setMinimumWidth(700)
+       ##self.newSourcetxt = QtWidgets.QLineEdit()
+        ##self.newSourcetxt.setMinimumWidth(700)
         ###Destination field
-        self.newDestinationtxt = QtWidgets.QLineEdit()
-        self.newDestinationtxt.setMinimumWidth(700)
+        ##self.newDestinationtxt = QtWidgets.QLineEdit()
+        ##self.newDestinationtxt.setMinimumWidth(700)
         ###Sensor field
-        self.newSensortxt = QtWidgets.QLineEdit()
-        self.newSensortxt.setMinimumWidth(700)
+        ##self.newSensortxt = QtWidgets.QLineEdit()
+        ##self.newSensortxt.setMinimumWidth(700)
         ###Check changes
-        self.button_check = QtWidgets.QPushButton()
-        self.button_check.setText('Check changes')
-        self.button_check.clicked.connect(self.link_check)
+        ##self.button_check = QtWidgets.QPushButton()
+        ##self.button_check.setText('Check changes')
+        ##self.button_check.clicked.connect(self.link_check)
         ###Button ok/cancel
-        self.button_box = QtWidgets.QDialogButtonBox(QtWidgets.QDialogButtonBox.Ok | QtWidgets.QDialogButtonBox.Cancel)
-        self.button_box.accepted.connect(self.accept)
-        self.button_box.rejected.connect(self.reject)
+        ##self.button_box = QtWidgets.QDialogButtonBox(QtWidgets.QDialogButtonBox.Ok | QtWidgets.QDialogButtonBox.Cancel)
+        ##self.button_box.accepted.connect(self.accept)
+        ##self.button_box.rejected.connect(self.reject)
         ###Layout
-        layout = QtWidgets.QFormLayout()
-        layout.setFieldGrowthPolicy(QtWidgets.QFormLayout.AllNonFixedFieldsGrow)
-        layout.addRow('Add Source names seperated by \',\'', self.newSourcetxt)
-        layout.addRow('Add Destination names seperated by \',\'', self.newDestinationtxt)
-        layout.addRow('Add Sensor names seperated by \',\'', self.newSensortxt)
-        layout.addRow('Check changes',self.button_check)
-        layout.addWidget(self.button_box)
+        ##layout = QtWidgets.QFormLayout()
+        ##layout.setFieldGrowthPolicy(QtWidgets.QFormLayout.AllNonFixedFieldsGrow)
+        ##layout.addRow('Add Source names seperated by \',\'', self.newSourcetxt)
+        ##layout.addRow('Add Destination names seperated by \',\'', self.newDestinationtxt)
+        ##layout.addRow('Add Sensor names seperated by \',\'', self.newSensortxt)
+        ##layout.addRow('Check changes',self.button_check)
+        ##layout.addWidget(self.button_box)
         ###Show Dialog
-        self.setLayout(layout)
-        self.setWindowTitle("Create Cyber Links")
-        self.setMinimumWidth(800)
-
-    def parseNewSource(self):
-        list_of_sources=[]
-        text=self.newSourcetxt.text()
-        text=text.replace(' ','')
-        text=text.split(',')
-        for source in text:
-            list_of_sources.append(source)
-        return list_of_sources
-    def parseNewDestination(self):
-        list_of_destinations=[]
-        text=self.newDestinationtxt.text()
-        text=text.replace(' ','')
-        text=text.split(',')
-        for destination in text:
-            list_of_destinations.append(destination)
-        return list_of_destinations
-    def parseNewSensor(self):
-        list_of_sensors=[]
-        text=self.newSensortxt.text()
-        text=text.split(',')
-        for sensor in text:
-            list_of_sensors.append(sensor)
-        return list_of_sensors
-
-    def link_check(self):
-        storage.list_of_new_sources = self.parseNewSource()
-        storage.list_of_new_destinations = self.parseNewDestination()
-        storage.list_of_new_link_sensors = self.parseNewSensor()
-        print(storage.list_of_new_sources)
-        print(storage.list_of_new_destinations)
-        print(storage.list_of_new_link_sensors)
-        inp2cpaApp.hasCyberLinks = True
-
+        ##self.setLayout(layout)
+        ##self.setWindowTitle("Create Cyber Links")
+        ##self.setMinimumWidth(800)
 class cyberAttackDialog(QtWidgets.QDialog):
     def __init__(self, cpa_dict):
         super(cyberAttackDialog, self).__init__()
@@ -378,13 +344,13 @@ class cyberAttackDialog(QtWidgets.QDialog):
         self.button_comm.clicked.connect(self.call_comm)
         self.button_act = QtWidgets.QPushButton()
         self.button_act.setText('Actuator')
-        self.button_act.clicked.connect(cyberAttackDialog.act_window)
+        self.button_act.clicked.connect(self.call_act)
         self.button_sen = QtWidgets.QPushButton()
         self.button_sen.setText('Sensor')
-        self.button_sen.clicked.connect(cyberAttackDialog.sen_window)
+        self.button_sen.clicked.connect(self.call_sen)
         self.button_con = QtWidgets.QPushButton()
         self.button_con.setText('Control')
-        self.button_con.clicked.connect(cyberAttackDialog.con_window)
+        self.button_con.clicked.connect(self.call_con)
         ### buttons ok/cancel
         self.button_box = QtWidgets.QDialogButtonBox(QtWidgets.QDialogButtonBox.Ok | QtWidgets.QDialogButtonBox.Cancel)
         self.button_box.accepted.connect(self.accept)
@@ -437,6 +403,10 @@ class comm_window(QtWidgets.QDialog):
         self.button_box = QtWidgets.QDialogButtonBox(QtWidgets.QDialogButtonBox.Ok | QtWidgets.QDialogButtonBox.Cancel)
         self.button_box.accepted.connect(self.accept)
         self.button_box.rejected.connect(self.reject)
+        ###Check changes
+        self.button_check = QtWidgets.QPushButton()
+        self.button_check.setText('Check changes')
+        self.button_check.clicked.connect(self.comm_check)
         ####layout
         layout = QtWidgets.QFormLayout()
         layout.setFieldGrowthPolicy(QtWidgets.QFormLayout.AllNonFixedFieldsGrow)
@@ -444,10 +414,22 @@ class comm_window(QtWidgets.QDialog):
         layout.addRow('Enter the initial condition', self.initCTxt)
         layout.addRow('Enter the ending condition', self.endCTxt)
         layout.addRow('Enter the attack arguments', self.argTxt)
+        layout.addRow('Check Changes',self.button_check)
         ###show
         self.setLayout(layout)
         self.setWindowTitle("Enter attack information")
         self.setMinimumWidth(500)
+
+    def comm_check(self):
+        storage.store.list_of_targets = storage.list_of_targets.extend(parseAttacks.parseTarget(self.targetTxt.text()))
+        storage.list_of_icocd = storage.list_of_icocd.extend(parseAttacks.parseICond(self.initCTxt.text()))
+        storage.list_of_econd = storage.list_of_econd.extend(parseAttacks.parseECond(self.endCTxt.text()))
+        storage.list_of_arg = storage.list_of_arg.extend(parseAttacks.parseArg(self.argTxt.text()))
+        print(storage.list_of_targets)
+        print(storage.list_of_icocd)
+        print(storage.list_of_econd)
+        print(storage.list_of_arg)
+        inp2cpaApp.hasAttacks = True
 
 class act_window(QtWidgets.QDialog):
     def __init__(self, cpa_dict):
@@ -468,6 +450,10 @@ class act_window(QtWidgets.QDialog):
         self.button_box = QtWidgets.QDialogButtonBox(QtWidgets.QDialogButtonBox.Ok | QtWidgets.QDialogButtonBox.Cancel)
         self.button_box.accepted.connect(self.accept)
         self.button_box.rejected.connect(self.reject)
+        ###Check changes
+        self.button_check = QtWidgets.QPushButton()
+        self.button_check.setText('Check changes')
+        self.button_check.clicked.connect(self.act_check)
         ####layout
         layout = QtWidgets.QFormLayout()
         layout.setFieldGrowthPolicy(QtWidgets.QFormLayout.AllNonFixedFieldsGrow)
@@ -475,11 +461,23 @@ class act_window(QtWidgets.QDialog):
         layout.addRow('Enter the initial condition', self.initCTxt)
         layout.addRow('Enter the ending condition', self.endCTxt)
         layout.addRow('Enter the attack arguments', self.argTxt)
+        layout.addRow('Check Changes',self.button_check)
         ###show
         self.setLayout(layout)
         self.setWindowTitle("Enter attack information")
         self.setMinimumWidth(500)
-        
+
+    def act_check(self):
+        storage.list_of_targets = storage.list_of_targets.extend(parseAttacks.parseTarget(self.targetTxt.text()))
+        storage.list_of_icocd = storage.list_of_icocd.extend(parseAttacks.parseICond(self.initCTxt.text()))
+        storage.list_of_econd = storage.list_of_econd.extend(parseAttacks.parseECond(self.endCTxt.text()))
+        storage.list_of_arg = storage.list_of_arg.extend(parseAttacks.parseArg(self.argTxt.text()))
+        print(storage.list_of_targets)
+        print(storage.list_of_icocd)
+        print(storage.list_of_econd)
+        print(storage.list_of_arg)
+        inp2cpaApp.hasAttacks = True
+
 class con_window(QtWidgets.QDialog):
     def __init__(self, cpa_dict):
         super(con_window, self).__init__()
@@ -499,6 +497,10 @@ class con_window(QtWidgets.QDialog):
         self.button_box = QtWidgets.QDialogButtonBox(QtWidgets.QDialogButtonBox.Ok | QtWidgets.QDialogButtonBox.Cancel)
         self.button_box.accepted.connect(self.accept)
         self.button_box.rejected.connect(self.reject)
+        ###Check changes
+        self.button_check = QtWidgets.QPushButton()
+        self.button_check.setText('Check changes')
+        self.button_check.clicked.connect(self.con_check)
         ####layout
         layout = QtWidgets.QFormLayout()
         layout.setFieldGrowthPolicy(QtWidgets.QFormLayout.AllNonFixedFieldsGrow)
@@ -506,11 +508,23 @@ class con_window(QtWidgets.QDialog):
         layout.addRow('Enter the initial condition', self.initCTxt)
         layout.addRow('Enter the ending condition', self.endCTxt)
         layout.addRow('Enter the attack arguments', self.argTxt)
+        layout.addRow('Check Changes',self.button_check)
         ###show
         self.setLayout(layout)
         self.setWindowTitle("Enter attack information")
         self.setMinimumWidth(500)
-        
+
+    def con_check(self):
+        storage.list_of_targets = storage.list_of_targets.extend(parseAttacks.parseTarget(self.targetTxt.text()))
+        storage.list_of_icocd = storage.list_of_icocd.extend(parseAttacks.parseICond(self.initCTxt.text()))
+        storage.list_of_econd = storage.list_of_econd.extend(parseAttacks.parseECond(self.endCTxt.text()))
+        storage.list_of_arg = storage.list_of_arg.extend(parseAttacks.parseArg(self.argTxt.text()))
+        print(storage.list_of_targets)
+        print(storage.list_of_icocd)
+        print(storage.list_of_econd)
+        print(storage.list_of_arg)
+        inp2cpaApp.hasAttacks = True
+
 class sen_window(QtWidgets.QDialog):
     def __init__(self, cpa_dict):
         super(sen_window, self).__init__()
@@ -530,6 +544,10 @@ class sen_window(QtWidgets.QDialog):
         self.button_box = QtWidgets.QDialogButtonBox(QtWidgets.QDialogButtonBox.Ok | QtWidgets.QDialogButtonBox.Cancel)
         self.button_box.accepted.connect(self.accept)
         self.button_box.rejected.connect(self.reject)
+        ###Check changes
+        self.button_check = QtWidgets.QPushButton()
+        self.button_check.setText('Check changes')
+        self.button_check.clicked.connect(self.sen_check)
         ####layout
         layout = QtWidgets.QFormLayout()
         layout.setFieldGrowthPolicy(QtWidgets.QFormLayout.AllNonFixedFieldsGrow)
@@ -537,10 +555,56 @@ class sen_window(QtWidgets.QDialog):
         layout.addRow('Enter the initial condition', self.initCTxt)
         layout.addRow('Enter the ending condition', self.endCTxt)
         layout.addRow('Enter the attack arguments', self.argTxt)
+        layout.addRow('Check Changes',self.button_check)
         ###show
         self.setLayout(layout)
         self.setWindowTitle("Enter attack information")
         self.setMinimumWidth(500)
 
+    def sen_check(self):
+        #storage.list_of_targets = storage.list_of_targets.extend(parseAttacks.parseTarget(self.targetTxt.text()))
+        #storage.list_of_icocd = storage.list_of_icocd.extend(parseAttacks.parseICond(self.initCTxt.text()))
+        #storage.list_of_econd = storage.list_of_econd.extend(parseAttacks.parseECond(self.endCTxt.text()))
+        #storage.list_of_arg = storage.list_of_arg.extend(parseAttacks.parseArg(self.argTxt.text()))
+        storage.list_of_targets.extend(parseAttacks.parseTarget(self.targetTxt.text()))
+        storage.list_of_icocd.extend(parseAttacks.parseICond(self.initCTxt.text()))
+        storage.list_of_econd.extend(parseAttacks.parseECond(self.endCTxt.text()))
+        storage.list_of_arg.extend(parseAttacks.parseArg(self.argTxt.text()))
+        print(storage.list_of_targets)
+        print(storage.list_of_icocd)
+        print(storage.list_of_econd)
+        print(storage.list_of_arg)
+        inp2cpaApp.hasAttacks = True
 
+class parseAttacks:
+    def parseTarget(self):
+        list_of_targets = []
+        text = self
+        text = text.split(',')
+        for target in text:
+            list_of_targets.append(target)
+        return list_of_targets
 
+    def parseICond(self):
+        list_of_icons = []
+        text = self
+        text = text.split(',')
+        for con in text:
+            list_of_icons.append(con)
+        return list_of_icons
+
+    def parseECond(self):
+        list_of_econs = []
+        text = self
+        text = text.split(',')
+        for con in text:
+            list_of_econs.append(con)
+        return list_of_econs
+
+    def parseArg(self):
+        list_of_args = []
+        text = self
+        text = text.split(',')
+        for arg in text:
+            list_of_args.append(arg)
+        return list_of_args
