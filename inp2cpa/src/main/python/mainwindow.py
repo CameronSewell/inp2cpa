@@ -18,6 +18,65 @@ class storage:
         self.list_of_new_destinations = []
         self.list_of_new_link_sensors = []
 
+class importWindow(QtWidgets.QMainWindow):
+    def __init__(self):
+        """Opens the Import .inp window to allow the user to select an inp. file."""
+        QtWidgets.QMainWindow.__init__(self)
+        self.setWindowTitle('INP2CPA - Import .inp')
+        self.setFixedHeight(140)
+        self.setMinimumWidth(400)
+        self.resize(600, 140)
+
+        ### text and input fields
+        pathname = QLineEdit('Select .inp file . . .')
+        pathname.setStyleSheet('color: gray')
+        pathname.setReadOnly(True)
+        self.selectBttn = QPushButton('Select .inp')
+        self.button_box = QDialogButtonBox(QtWidgets.QDialogButtonBox.Ok | QtWidgets.QDialogButtonBox.Cancel)
+        
+        def importINPfunc(self):
+            """Connected to the 'import .inp' button. 
+            Imports an .inp file. If nothing is selected, displays 'Nothing Imported!'"""
+            in_inpfile= str(QtWidgets.QFileDialog.getOpenFileName(None, "Open .inp water network file", '.', "(*.inp)")[0])
+            if (len(in_inpfile)>0): 
+                pathname.setStyleSheet('color: black')
+                pathname.setText(str(in_inpfile))
+                global pathName
+                pathName = in_inpfile
+                cyberTopo=inp2cpa.cyberControlRead(in_inpfile)
+                global cpa_dict
+                cpa_dict = inp2cpa.create_topology_cpa_dict(cyberTopo)
+            else:
+                pathname.setText('Nothing Imported!')
+
+
+        ### connect buttons
+        self.selectBttn.clicked.connect(importINPfunc)
+        self.button_box.accepted.connect(lambda: (self.accept, self.mainWindow()))
+        self.button_box.rejected.connect(self.reject)
+
+        ### layout of the dialog
+        outerLayout = QtWidgets.QVBoxLayout()
+        textLayout = QtWidgets.QVBoxLayout()
+        inputLayout = QtWidgets.QHBoxLayout()
+
+        ### add widgets
+        inputLayout.addWidget(pathname)
+        inputLayout.addWidget(self.selectBttn)
+        textLayout.addLayout(inputLayout)
+        outerLayout.addLayout(textLayout)
+        outerLayout.addWidget(self.button_box)
+        self.setLayout(outerLayout)
+        
+    def mainWindow (self):
+        """Linked to the Ok button.
+        Creates the main inp2cpaApp window."""
+        global cpa_dict
+        self.close()
+        newinp2cpaApp=inp2cpaApp(cpa_dict)
+        if newinp2cpaApp.exec_():
+                pass   
+
 class inp2cpaApp(QtWidgets.QMainWindow):
     isAltered = False
     hasCyberLinks = False
@@ -187,6 +246,8 @@ class newPLCDialog(QtWidgets.QDialog):
     warningNo = 0
     warning=['', 'Warning: Format each cybernode with only one underscore', 'Warning: No PLCs entered']
     def __init__(self, cpa_dict):
+        """Called by the reassignfunc function. 
+        Creates the Re-Assign CyberNodes window allowing users to reassign cybernodes through the GUI."""
         super(newPLCDialog, self).__init__()
         self.cpa_dict=cpa_dict
         self.setFixedWidth(1200)
@@ -202,10 +263,68 @@ class newPLCDialog(QtWidgets.QDialog):
         self.newActuatortxt.setMinimumWidth(700)
         ### Warning label
         self.warningtxt = QtWidgets.QLabel(self.warning[self.warningNo])
+        self.warningtxt.setStyleSheet("""
+        QWidget {
+            color: red;}
+        """)
         ### Check Changes and Update Warning Label
         def updateChanges (event):
+            """Connected to the 'Check Changes' button.
+            Calls check_changes_funct and updates the warning text.'"""
             self.check_changes_func()
             self.warningtxt.setText(self.warning[self.warningNo])
+        def callHelpWindow (event):
+            """Connected to the '?' button.
+            Calls CreateHelpWindow to create the 'Help for Re-Assigning CyberNodes' window."""
+            text = ("Re-Assigning CyberNodes\n" 
+                    "   This window assists in reassigning PLCs to their respective sensors and acutuators. "
+                    "The inputs saved from this screen will replace the current CyberNode data for the new .cpa file.\n\n"
+                    "'PLC Names' Field\n"
+                    "   Enter PLC names into the first input field, with each name separated by a comma. Do not use a space "
+                    "between the names, as the space will become part of the PLC name.\n\n"
+                    "Example: \n"
+                    "PLC Names: PLC1,PLC2\n\n"
+                    "'Sensors' Field\n"
+                    "   Enter sensors in the same order as their PLCs were entered. "
+                    "The PLCs are linked to the sensors based on the order they are listed in. If multiple sensors are linked to one PLC, "
+                    "separate the sensors with a space (' '). To link a sensor to the next PLC in the list, separate the sensors with a "
+                    "comma (','). Do not use multiple spaces, or a space and a comma, to separate the sensors, as the space will be aded to the sensor name. "
+                    "It is highly suggested that PLC names begin with 'P_', 'S_', 'F_', or 'SE_' to be properly processed and correctly formatted. "
+                    "'P_' indicates a sensor montitoring pressure, 'S_' indicates a sensor monitoring status, 'F_' indicates a sensor monitoring flow, "
+                    "and 'SE_' indicates a sensor monitoring settings of pumps and valves. Each letter of these prefixes must be capitalized.\n\n"
+                    "Example:\n"
+                    "PLC Names: PLC1,PLC2\n"
+                    "Sensors: P_TANK,S_PUMP1 S_PUMP2\n\n"
+                    "   In the above example, PLC1 is connected to the P_TANK sensor, and PLC2 is connected to both sensors S_PUMP1 and S_PUMP2.\n"
+                    "   P_TANK is a sensor responsible for monitoring the pressure of the tank, while S_PUMP1 is the sensor monitoring "
+                    "the status of PUMP1 and S_PUMP2 is the sensor monitoring the status of PUMP2.\n\n"
+                    "'Actuators' Field\n"
+                    "   Enter the actuators in the same order as their PLCs were entered. "
+                    "The PLS are linked to the actuators based on the order they are listed in. If multiple actuators are linked to one PLC, "
+                    "separate the actuators with a space (' '). To link an actuator to the next PLC in the list, separate the actuators with a "
+                    "comma (','). Do not use multiple spaces, or a space and a comma, to separate the actuators as the space will be added to the actuator name. \n\n"
+                    "Example:\n"
+                    "PLC Names: PLC1,PLC2\n"
+                    "Sensors: P_TANK,S_PUMP1 S_PUMP2\n"
+                    "Actuators:  ,PUMP1 PUMP2\n\n"
+                    "   In the above example, PLC1 is not connected to any actuators, and PLC2 is connected to the actuators called PUMP1 and PUMP2.\n\n"
+                    "'Check Changes' Button\n"
+                    "   After all of the information is entered, click 'Check Changes' to identify any potetial problems with the input. "
+                    "After the changes have been checked, click 'Ok' to submit the changes.\n\n" 
+                    "Full Example: \n"
+                    "PLC Names: PLC1,PLC2\n"
+                    "Sensors: P_TANK,S_PUMP1 S_PUMP2\n"
+                    "Actuators:  ,PUMP1 PUMP2\n\n"
+                    "After clicking 'Ok', the [CYBERNODE] section of the .cpa file should look like this:\n"
+                    ";Name, Sensors,    Actuators\n"
+                    "PLC1,  P_TANK\n"
+                    "PLC2,  S_PUMP1 S_PUMP2,    PUMP1 PUMP2")
+
+            windowTitle = "Help for Re-Assigning CyberNodes"
+            newWindow=CreateHelpWindow(text, windowTitle)
+            if newWindow.exec_():
+                pass
+
         ### button CHECK
         self.button_check = QtWidgets.QPushButton()
         self.button_check.setText('Check Changes')
@@ -214,6 +333,11 @@ class newPLCDialog(QtWidgets.QDialog):
         self.button_box = QtWidgets.QDialogButtonBox(QtWidgets.QDialogButtonBox.Ok | QtWidgets.QDialogButtonBox.Cancel)
         self.button_box.accepted.connect(self.accept)
         self.button_box.rejected.connect(self.reject)
+        ### help button
+        self.helpButton = QtWidgets.QPushButton()
+        self.helpButton.setText('?')
+        self.helpButton.clicked.connect(callHelpWindow)
+
         ## layout of the dialog
         layout = QtWidgets.QFormLayout()
         layout.setFieldGrowthPolicy(QtWidgets.QFormLayout.AllNonFixedFieldsGrow)
@@ -229,6 +353,8 @@ class newPLCDialog(QtWidgets.QDialog):
         self.setMinimumWidth(800)   
 
     def check_changes_func(self):
+        """Connected to the update_changes function. 
+        Calls parsePLCtext, parseActuatortext, and parseSensortext to update warning."""
         storage.list_of_new_plcs = self.parsePLCtext()
         print(storage.list_of_new_plcs)
         storage.list_of_new_sensors = self.parseSensortext()
@@ -239,6 +365,8 @@ class newPLCDialog(QtWidgets.QDialog):
         print(self.warningNo)
         
     def parsePLCtext(self):
+        """Called by the check_changes_func function. 
+        Splits the user's 'PLC Names' input between commas, adds the PLCs to a list, and returns the list."""
         #overwritingPLC1=False
         error=[]
         list_of_new_plcs=[]
