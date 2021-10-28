@@ -1,16 +1,22 @@
-from os import remove
+from logging import PlaceHolder
+from os import link, remove
 import sys
+from xml.etree.ElementTree import parse
 from PyQt5 import QtCore, QtGui, uic, QtWidgets
 from PyQt5.QtCore import QThread, pyqtSignal, pyqtSlot
 from PyQt5.QtCore import *
 from PyQt5.QtWidgets import *
-
 import re
+
 import wntr
 import inp2cpa
 
+cpa_dict = None
+pathName = ""
+
 class storage:
     def store(self):
+        """Creates lists to store the CPA file data."""
         self.list_of_new_plcs = []
         self.list_of_new_sensors = []
         self.list_of_new_actuators = []
@@ -83,6 +89,7 @@ class inp2cpaApp(QtWidgets.QMainWindow):
     hasAttacks = False
 
     def __init__(self, ui):
+        """Opens the Import .inp window to allow the user to select an inp. file."""
         QtWidgets.QMainWindow.__init__(self)
         uic.loadUi(ui, self)
         
@@ -116,13 +123,19 @@ class inp2cpaApp(QtWidgets.QMainWindow):
         
         
     def importINPfunc(self):
-        self.in_inpfile= str(QtWidgets.QFileDialog.getOpenFileName(None, "Open .inp water network file", '.', "(*.inp)")[0])
-        if self.in_inpfile: 
-            self.inp_path.setText('Imported '+str(self.in_inpfile))
-            self.cyberTopo=inp2cpa.cyberControlRead(self.in_inpfile)
-            self.cpa_dict=inp2cpa.create_topology_cpa_dict(self.cyberTopo)
-        else:
-            self.inp_path.setText('Nothing imported !')
+            """Connected to the 'import .inp' button. 
+            Imports an .inp file. If nothing is selected, displays 'Nothing Imported!'"""
+            in_inpfile= str(QtWidgets.QFileDialog.getOpenFileName(None, "Open .inp water network file", '.', "(*.inp)")[0])
+            if (len(in_inpfile)>0): 
+                pathname.setStyleSheet('color: black')
+                pathname.setText(str(in_inpfile))
+                global pathName
+                pathName = in_inpfile
+                cyberTopo=inp2cpa.cyberControlRead(in_inpfile)
+                global cpa_dict
+                cpa_dict = inp2cpa.create_topology_cpa_dict(cyberTopo)
+            else:
+                pathname.setText('Nothing Imported!')
     
     def previewCPAfile(self):
         formated_string=self.parse_dict() 
@@ -132,24 +145,32 @@ class inp2cpaApp(QtWidgets.QMainWindow):
         
             
     def reassignfunc(self):
-        newPLCDlg=newPLCDialog(self.cpa_dict)
-        if newPLCDlg.exec_():
-            pass
+            """Connected to the 'Re-Assign CyberNodes' button. 
+            This function calles the newPLCDialog function (creates the Re-Assign CyberNodes window)."""
+            newPLCDlg=newPLCDialog(cpa_dict)
+            if newPLCDlg.exec_():
+                pass
 
     def addLinks(self):
-        newLinkDlg = cyberLinkDialog(self.cpa_dict)
-        if newLinkDlg.exec_():
-            pass
+            """Connected to the 'Create CyberLinks' button. 
+            This function calles the CyberLinkDialog function (creates the Create CyberLinks window)."""
+            newLinkDlg = cyberLinkDialog(cpa_dict)
+            if newLinkDlg.exec_():
+                pass
     
     def addAttack(self):
-        attackDlg = cyberAttackDialog(self.cpa_dict)
-        if attackDlg.exec_():
-            pass
+            """Connected to the 'Create CyberAttacks' button. 
+            This function calles the cyberAttackDialog function (creates the Choose an Attack Type window)."""
+            attackDlg = cyberAttackDialog(cpa_dict)
+            if attackDlg.exec_():
+                pass
 
     # def modOptions(self):
     # pass
 
     def parse_dict(self):
+        """Called by previewCPAfile. 
+            Parses imported .inp file, and creates the base/starting .cpa file from the import, stored in the storage class."""
         if inp2cpaApp.isAltered:
             formatted_string = '[CYBERNODES]\n;Name,\tSensors,\tActuators\n'
             for x in range(len(storage.list_of_new_plcs)):
