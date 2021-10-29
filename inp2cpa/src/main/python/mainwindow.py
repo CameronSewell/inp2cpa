@@ -2,10 +2,12 @@ from logging import PlaceHolder
 from os import link, remove
 import sys
 from xml.etree.ElementTree import parse
+import PyQt5 as Qt
 from PyQt5 import QtCore, QtGui, uic, QtWidgets
 from PyQt5.QtCore import QThread, pyqtSignal, pyqtSlot
 from PyQt5.QtCore import *
 from PyQt5.QtWidgets import *
+
 import re
 
 import wntr
@@ -24,7 +26,7 @@ class storage:
         self.list_of_new_destinations = []
         self.list_of_new_link_sensors = []
 
-class importWindow(QtWidgets.QMainWindow):
+class importWindow(QtWidgets.QDialog):
     def __init__(self):
         """Opens the Import .inp window to allow the user to select an inp. file."""
         QtWidgets.QMainWindow.__init__(self)
@@ -32,7 +34,7 @@ class importWindow(QtWidgets.QMainWindow):
         self.setFixedHeight(140)
         self.setMinimumWidth(400)
         self.resize(600, 140)
-
+        self.setWhatsThis("Help on widget")
         ### text and input fields
         pathname = QLineEdit('Select .inp file . . .')
         pathname.setStyleSheet('color: gray')
@@ -83,143 +85,140 @@ class importWindow(QtWidgets.QMainWindow):
         if newinp2cpaApp.exec_():
                 pass   
 
-class inp2cpaApp(QtWidgets.QMainWindow):
+class inp2cpaApp(QtWidgets.QDialog):
     isAltered = False
-    hasCyberLinks = False
+    hasCyberLinks = False 
     hasAttacks = False
+    def __init__(self, cpa_dict):
+        """Initializes main INP2CPA window, including creating buttons linked to their respective functions. """
+        super(inp2cpaApp, self).__init__()
+        self.setWindowTitle('INP2CPA - ' + pathName)
+        self.cpa_dict = cpa_dict
+        self.show()
+        self.setMaximumHeight(320)
+        
+        def parse_dict(self):
+            """Called by previewCPAfile. 
+            Parses imported .inp file, and creates the base/starting .cpa file from the import, stored in the storage class."""
+            if inp2cpaApp.isAltered:
+                formatted_string = '[CYBERNODES]\n;Name,\tSensors,\tActuators\n'
+                for x in range(len(storage.list_of_new_plcs)):
+                    range(len(storage.list_of_new_sensors))
+                    range(len(storage.list_of_new_actuators))
+                    formatted_string = formatted_string + str(storage.list_of_new_plcs[x]) + ',\t' + str(storage.list_of_new_sensors[x]) + ',\t' + str(storage.list_of_new_actuators[x]) + '\n'
+                if inp2cpaApp.hasCyberLinks:
+                    formatted_string  = formatted_string + '[CYBERLINKS]\n;Source,\tDestination,\tSensors\n' 
+                    for x in range(len(storage.list_of_new_sources)):
+                        range(len(storage.list_of_new_destinations))
+                        range(len(storage.list_of_new_link_sensors))
+                        formatted_string = formatted_string + str(storage.list_of_new_sources[x]) + ',\t' + str(storage.list_of_new_destinations[x]) + ',\t' + str(storage.list_of_new_link_sensors[x]) + '\n'
 
-    def __init__(self, ui):
-        """Opens the Import .inp window to allow the user to select an inp. file."""
-        QtWidgets.QMainWindow.__init__(self)
-        uic.loadUi(ui, self)
-        
-        self.setWindowTitle('INP2CPA')
-        # click  buttons
-        self.importINP.clicked.connect(self.importINPfunc)
-        self.reassigncybernodes.clicked.connect(self.reassignfunc)
-        self.addCyberAttacks.clicked.connect(self.addAttack)
-        #self.modifyCyberOptions.clicked.connect(self.modOptions)
-        self.makeCyberLinks.clicked.connect(self.addLinks)
-        self.previewFileBtn.clicked.connect(self.previewCPAfile)
-        self.save_cpa_btn.clicked.connect(self.saveCPAfile)
-        self.availablePLCnames=['2','3','4','5','6','7','8','9','10','11','12','13','14','15','16']
-        self.TextToExport=None
-        # self.findheadersButton.clicked.connect(self.getHeadersfunc)
-        # self.getPart.clicked.connect(self.getPartfunc)
-        # self.showDFbutton.clicked.connect(self.showDFfunc)
-        # self.findCommentsButton.clicked.connect(self.getCommentsfunc)        
-        # self.lastAcquiredPart=pd.DataFrame()
-        # self.copyToClipboard.clicked.connect(self.copyfunc)
-        # self.renameElements.clicked.connect(self.renameElemenetsfunc)
-        # self.parse_rpt.clicked.connect(self.parseRPTfunc)
-        # # Initialize whattoparsecombobox
-        # self.parseElementComboBox.addItem('Link')
-        # self.parseElementComboBox.addItem('Node')
-        # self.showDFresultsButton.clicked.connect(self.showRPTdffunc)
-        # self.visualizeButton.clicked.connect(self.vizualizeRPTdffunc)
-        
-        # self.parseAttributeComboBox.addItem('Pressure')
-        # self.parseAttributeComboBox.addItem('Pressure')
-        
-        
-    def importINPfunc(self):
-            """Connected to the 'import .inp' button. 
-            Imports an .inp file. If nothing is selected, displays 'Nothing Imported!'"""
-            in_inpfile= str(QtWidgets.QFileDialog.getOpenFileName(None, "Open .inp water network file", '.', "(*.inp)")[0])
-            if (len(in_inpfile)>0): 
-                pathname.setStyleSheet('color: black')
-                pathname.setText(str(in_inpfile))
-                global pathName
-                pathName = in_inpfile
-                cyberTopo=inp2cpa.cyberControlRead(in_inpfile)
-                global cpa_dict
-                cpa_dict = inp2cpa.create_topology_cpa_dict(cyberTopo)
+                else:
+                    formatted_string  = formatted_string + '[CYBERLINKS]\n;Source,\tDestination,\tSensors\n'   
+                formatted_string = formatted_string + '[CYBERATTACKS]\n;Type,\tTarget,\tInit_cond,\tEnd_cond,\tArguments\n'
+                formatted_string = formatted_string + '[CYBEROPTIONS]\n' + 'verbosity'+ '\t' +'1' +'\n'
+                formatted_string = formatted_string + ';what_to_store' + '\t'+'everything'+'\n'
+                formatted_string = formatted_string + ';pda_options' + '\t' + '0.5' + '\t' + '0' + '\t' + '20' + '\t' + 'Wagner'
+                return formatted_string
             else:
-                pathname.setText('Nothing Imported!')
-    
-    def previewCPAfile(self):
-        formated_string=self.parse_dict() 
-        previewDlg=PreviewDialog(formated_string)
-        if previewDlg.exec_():
-            self.TextToExport=formated_string
-        
-            
-    def reassignfunc(self):
+                formatted_string='[CYBERNODES]\n'   
+                for PLCkey in self.cpa_dict.keys():
+                    formatted_string=formatted_string+ str(PLCkey)+'\t'
+                    sensorlist=self.cpa_dict[PLCkey][0]
+                    removeChar='[]\''
+                    senstr=','.join(map(str,sensorlist))
+                    for character in removeChar:
+                        senstr = senstr.replace(character, '')
+                    formatted_string=formatted_string+ senstr+'\t'
+                    actlist=self.cpa_dict[PLCkey][1]
+                    actstr=','.join(map(str,actlist))
+                    for character in removeChar:
+                        actstr = actstr.replace(character, '')
+                formatted_string = formatted_string+ actstr+'\n'
+                formatted_string = formatted_string+'[CYBERATTACKS]'+'\n'+'[CYBEROPTIONS]'+'\n' + 'verbosity'+'\t'+'1'+'\n'
+                formatted_string = formatted_string+'what_to_store' + '\t'+'everything'+'\n'
+                formatted_string = formatted_string+'pda_options' + '\t'+'0.5'+'\t'+'0'+'\t'+'20'+'\t'+'Wagner'
+                return formatted_string   
+
+        def reassignfunc(self):
             """Connected to the 'Re-Assign CyberNodes' button. 
             This function calles the newPLCDialog function (creates the Re-Assign CyberNodes window)."""
             newPLCDlg=newPLCDialog(cpa_dict)
             if newPLCDlg.exec_():
                 pass
 
-    def addLinks(self):
+        def addLinks(self):
             """Connected to the 'Create CyberLinks' button. 
             This function calles the CyberLinkDialog function (creates the Create CyberLinks window)."""
             newLinkDlg = cyberLinkDialog(cpa_dict)
             if newLinkDlg.exec_():
                 pass
-    
-    def addAttack(self):
+        
+        def addAttack(self):
             """Connected to the 'Create CyberAttacks' button. 
             This function calles the cyberAttackDialog function (creates the Choose an Attack Type window)."""
             attackDlg = cyberAttackDialog(cpa_dict)
             if attackDlg.exec_():
                 pass
+        
+        def saveCPAfile(self):
+            """Connected to the 'Save .cpa' button. 
+            Exports .cpa file to users location of choice."""
+            name = str(QtWidgets.QFileDialog.getSaveFileName(self, 'Save File', '.', "(*.cpa)")[0])
+            print(name)
+            file = open(name,'w')
+            text = self.TextToExport
+            file.write(text)
+            file.close()
 
-    # def modOptions(self):
-    # pass
+        ### Create buttons and text
+        formatted_string = parse_dict(self)
+        previewtxt = QLabel('Preview .cpa file:')
+        previewBox = QPlainTextEdit(formatted_string)
+        previewBox.setReadOnly(True)
+        nodesBttn = QPushButton('Re-Assign CyberNodes')
+        linksBttn = QPushButton('Create CyberLinks')
+        attacksBttn = QPushButton('Create CyberAttacks')
+        saveBttn = QPushButton('Save')
+        saveBttn.setDefault(True)
+        verticalSpacer = QtWidgets.QSpacerItem(60, 10, QtWidgets.QSizePolicy.Minimum, QtWidgets.QSizePolicy.Expanding) 
+        
+        def updatePreview (self):
+            """Called bythe Re-Assign CyberNodes and Create CyberLinks buttons.
+            Creates a while loop, checking to see when the main window is refocused, and then updates the .cpa preview text."""
+            print ('updatePreview called')
+            temp = False
+            while (temp == False):
+                temp = previewBox.hasFocus()
+                print (temp)
+                previewBox.setFocus()
+            if (temp):
+                formatted_string = parse_dict(self)
+                print ('formattedString')
+                previewBox.setPlainText(formatted_string)
 
-    def parse_dict(self):
-        """Called by previewCPAfile. 
-            Parses imported .inp file, and creates the base/starting .cpa file from the import, stored in the storage class."""
-        if inp2cpaApp.isAltered:
-            formatted_string = '[CYBERNODES]\n;Name,\tSensors,\tActuators\n'
-            for x in range(len(storage.list_of_new_plcs)):
-                range(len(storage.list_of_new_sensors))
-                range(len(storage.list_of_new_actuators))
-                formatted_string = formatted_string + str(storage.list_of_new_plcs[x]) + ',\t' + str(storage.list_of_new_sensors[x]) + ',\t' + str(storage.list_of_new_actuators[x]) + '\n'
-            if inp2cpaApp.hasCyberLinks:
-                formatted_string  = formatted_string + '[CYBERLINKS]\n;Source,\tDestination,\tSensors\n' 
-                for x in range(len(storage.list_of_new_sources)):
-                    range(len(storage.list_of_new_destinations))
-                    range(len(storage.list_of_new_link_sensors))
-                    formatted_string = formatted_string + str(storage.list_of_new_sources[x]) + ',\t' + str(storage.list_of_new_destinations[x]) + ',\t' + str(storage.list_of_new_link_sensors[x]) + '\n'
+        ### Connect Buttons
+        nodesBttn.clicked.connect(lambda: (reassignfunc(self), updatePreview(self)))
+        linksBttn.clicked.connect(lambda: (addLinks(self), updatePreview(self)))
+        attacksBttn.clicked.connect(addAttack)
+        saveBttn.clicked.connect(saveCPAfile)
+        
+        ### layout of the dialog
+        outerLayout = QtWidgets.QVBoxLayout()
+        mainLayout = QtWidgets.QVBoxLayout()
+        buttonLayout = QtWidgets.QHBoxLayout()
 
-            else:
-                formatted_string  = formatted_string + '[CYBERLINKS]\n;Source,\tDestination,\tSensors\n'   
-            formatted_string = formatted_string + '[CYBERATTACKS]\n;Type,\tTarget,\tInit_cond,\tEnd_cond,\tArguments\n'
-            formatted_string = formatted_string + '[CYBEROPTIONS]\n' + 'verbosity'+ '\t' +'1' +'\n'
-            formatted_string = formatted_string + ';what_to_store' + '\t'+'everything'+'\n'
-            formatted_string = formatted_string + ';pda_options' + '\t' + '0.5' + '\t' + '0' + '\t' + '20' + '\t' + 'Wagner'
-            return formatted_string
-        else:
-            formatted_string='[CYBERNODES]\n'   
-            for PLCkey in self.cpa_dict.keys():
-                formatted_string=formatted_string+ str(PLCkey)+'\t'
-                sensorlist=self.cpa_dict[PLCkey][0]
-                removeChar='[]\''
-                senstr=','.join(map(str,sensorlist))
-                for character in removeChar:
-                    senstr = senstr.replace(character, '')
-                formatted_string=formatted_string+ senstr+'\t'
-                actlist=self.cpa_dict[PLCkey][1]
-                actstr=','.join(map(str,actlist))
-                for character in removeChar:
-                    actstr = actstr.replace(character, '')
-            formatted_string = formatted_string+ actstr+'\n'
-            formatted_string = formatted_string+'[CYBERATTACKS]'+'\n'+'[CYBEROPTIONS]'+'\n' + 'verbosity'+'\t'+'1'+'\n'
-            formatted_string = formatted_string+'what_to_store' + '\t'+'everything'+'\n'
-            formatted_string = formatted_string+'pda_options' + '\t'+'0.5'+'\t'+'0'+'\t'+'20'+'\t'+'Wagner'
-            return formatted_string
-                
-
-    
-    def saveCPAfile(self):
-        name = str(QtWidgets.QFileDialog.getSaveFileName(self, 'Save File', '.', "(*.cpa)")[0])
-        # print(name)
-        file = open(name,'w')
-        text = self.TextToExport
-        file.write(text)
-        file.close()
+        ### add to layouts
+        mainLayout.addWidget(previewtxt)
+        mainLayout.addWidget(previewBox)
+        buttonLayout.addWidget(nodesBttn)
+        buttonLayout.addWidget(linksBttn)
+        buttonLayout.addWidget(attacksBttn)
+        buttonLayout.addSpacerItem(verticalSpacer)
+        buttonLayout.addWidget(saveBttn)
+        outerLayout.addLayout(mainLayout)
+        outerLayout.addLayout(buttonLayout)
+        self.setLayout(outerLayout)
 
 class PreviewDialog(QtWidgets.QDialog):
     def __init__(self, newText):
@@ -503,6 +502,44 @@ class newPLCDialog(QtWidgets.QDialog):
         ##self.setLayout(layout)
         ##self.setWindowTitle("Create Cyber Links")
         ##self.setMinimumWidth(800)
+class CreateHelpWindow(QtWidgets.QDialog):
+    def __init__(self, text, title):
+        """Called by newPLCDialog.callHelpWindow(). Takes str for the main text, and str for the title of the window.
+        Creates a new window with additional information to help the user."""
+        super(CreateHelpWindow, self).__init__()
+        self.setWindowTitle(title)
+        self.resize(400, 500)
+        self.setMaximumSize(700, 600)
+        self.setMinimumSize(300, 400)
+
+        self.text = text
+
+        layout = QtWidgets.QVBoxLayout()
+        textLabel = ScrollLabel(self)
+        textLabel.setText(text)
+        textLabel.show()
+        layout.addWidget(textLabel)
+        self.setLayout(layout)
+
+class ScrollLabel(QScrollArea, CreateHelpWindow):
+    def __init__(self, *args, **kwargs):
+        """Called by CreateHelpWindow. Inherits QScrollArea and CreateHelpWindow.
+        Creates a scrollable widget that displays a QLabel."""
+        QScrollArea.__init__(self, *args, **kwargs)
+        self.setWidgetResizable(True)
+        content = QWidget(self)
+        self.setWidget(content)
+        self.lay = QVBoxLayout(content)
+        self.label = QLabel(content)
+        self.label.setAlignment(Qt.AlignLeft|Qt.AlignTop)
+        self.label.setWordWrap(True)
+        self.lay.addWidget(self.label)
+
+    def setText(self, text):
+        """Called by CreateHelpWindow. Takes str as a parameter.
+        A function that sets the text of the ScrollLabel."""
+        self.label.setText(text)
+
 class cyberAttackDialog(QtWidgets.QDialog):
     def __init__(self, cpa_dict):
         """Called by the addAttack function.
@@ -786,3 +823,148 @@ class parseAttacks:
         for arg in text:
             list_of_args.append(arg)
         return list_of_args
+
+class cyberLinkDialog(QtWidgets.QDialog):
+    def __init__(self, cpa_dict):
+        """Called by the addLinks function. 
+        Creates the Create CyberLinks window allowing users to create cyberlinks through the GUI."""
+        super(cyberLinkDialog, self).__init__()
+
+        def callHelpWindow (event):
+            """Connected to the '?' button.
+            Calls CreateHelpWindow to create the 'Help for Creating CyberLinks' window."""
+            text = ("Creating CyberLinks\n"
+                "   This window assists in creating CyberLinks between source and destination nodes. If CyberLinks have already been """
+                "created, the CyberLinks saved from this window will replace the current CyberLinks in the .cpa file.\n\n"
+                "'Source Names' Field\n"
+                "   Enter the sources into the text field, separated by commas. Sources should not be separated by spaces, "
+                "or a comma and a space, as the space will be added to the source name.\n\n"
+                "'Destination Names' Field\n"
+                "   Enter the destinations into the text field, separated by commas. The destinations should be listed in the same "
+                "order as their corresponding sources. Destinations should not be separated by spaces, "
+                "or a comma and a space, as the space will be added to the destination name.\n\n"
+                "'Sensors' Field\n"
+                "   Enter the sensors into the text field, separated by commas. The sensors should be listed in the same "
+                "order as their corresponding sources. Sensors should not be separated by spaces, "
+                "or a comma and a space, as the space will be added to the source name.\n\n"
+                "Example: \n"
+                "Source Names: PLC1,PLC1\n"
+                "Destination Names: PLC2,SCADA\n"
+                "Sensors: P_TANK,P_TANK\n\n"
+                "   In the above example, there is a CyberLink from PLC1 to PLC2, sending information collected by the P_TANK sensor, "
+                "and a CyberLink from PLC1 to SCADA, also sending information collected the P_TANK sensor.\n\n"
+                "   After the changes are submitted by selecting the 'Ok' button, the new .cpa file [CYBERLINKS] section should read:\n"
+                ";Source, Destination, Sensors\n"
+                "PLC1,  PLC2,   P_TANK\n"
+                "PLC1,  SCADA,  P_TANK")
+            windowTitle = "Help for Creating CyberLinks"
+            newWindow=CreateHelpWindow(text, windowTitle)
+            if newWindow.exec_():
+                pass
+
+        ###Source field
+        self.newSourcetxt = QtWidgets.QLineEdit()
+        ###Destination field
+        self.newDestinationtxt = QtWidgets.QLineEdit()
+        ###Sensor field
+        self.newSensortxt = QtWidgets.QLineEdit()
+        # ###Check changes
+        # self.button_check = QtWidgets.QPushButton()
+        # self.button_check.setText('Check Changes')
+        # self.button_check.clicked.connect(self.link_check)
+
+        ###Button ok/cancel
+        self.button_box = QtWidgets.QDialogButtonBox(QtWidgets.QDialogButtonBox.Ok | QtWidgets.QDialogButtonBox.Cancel)
+        self.button_box.accepted.connect(lambda: (self.link_check(), self.close()))
+        self.button_box.rejected.connect(self.reject)
+        ###Help button
+        self.helpButton = QtWidgets.QPushButton()
+        self.helpButton.setText('?')
+        self.helpButton.clicked.connect(callHelpWindow)
+
+        ## create layouts 
+        outerLayout = QtWidgets.QVBoxLayout()
+        layout = QtWidgets.QVBoxLayout()
+        buttonLayout = QtWidgets.QHBoxLayout()
+
+        myFont = QtGui.QFont()
+        myFont.setBold(True)
+
+        ### Label and entry layout
+        sourceNames = QLabel('Source Names')
+        sourceNames.setFont(myFont)
+        layout.addWidget(sourceNames)
+        layout.addWidget(QLabel('Separate each source name by \',\''))
+        layout.addWidget(self.newSourcetxt)
+        destinationNames = QLabel('Destination Names')
+        destinationNames.setFont(myFont)
+        layout.addWidget(destinationNames)
+        layout.addWidget(QLabel('Separate destination names by \',\''))
+        layout.addWidget(self.newDestinationtxt)
+        actuators = QLabel('Sensors')
+        actuators.setFont(myFont)
+        layout.addWidget(actuators)
+        layout.addWidget(QLabel('Separate sensor names by \',\''))
+        layout.addWidget(self.newSensortxt)
+        layout.addWidget(QLabel(""))
+
+        ### Check changes and ok/cancel buttons
+        # buttonLayout.addWidget(self.button_check) 
+        buttonLayout.addWidget(self.button_box)
+        buttonLayout.addWidget(self.helpButton)
+
+        ### Set layouts
+        outerLayout.addLayout(layout)
+        outerLayout.addLayout(buttonLayout)
+        self.setLayout(outerLayout)
+
+        ### Set window properties
+        self.setWindowTitle("Create CyberLinks")
+        # self.setFixedWidth(600)
+        # self.setFixedHeight(350) 
+        self.resize(600, 350)
+        self.setMaximumSize(900, 500)
+
+    def parseNewSource(self):
+        """Called by the link_check function. 
+        Seperates the user's input by commas, adds the sources to a list, and returns the list."""
+        list_of_sources=[]
+        text=self.newSourcetxt.text()
+        text=text.replace(' ','')
+        text=text.split(',')
+        for source in text:
+            list_of_sources.append(source)
+        return list_of_sources
+
+    def parseNewDestination(self):
+        """Called by the link_check function.
+        Seperates the user's input by commas, adds the destinations to a list, and returns the list."""
+        list_of_destinations=[]
+        text=self.newDestinationtxt.text()
+        text=text.replace(' ','')
+        text=text.split(',')
+        for destination in text:
+            list_of_destinations.append(destination)
+        return list_of_destinations
+
+    def parseNewSensor(self):
+        """Called by the link_check function.
+        Seperates the user's input by commas, adds the sensors to a list, and returns the list."""
+        list_of_sensors=[]
+        text=self.newSensortxt.text()
+        text=text.split(',')
+        for sensor in text:
+            list_of_sensors.append(sensor)
+        return list_of_sensors
+
+    def link_check(self):
+        """Called when the 'Check Changes' button is clicked.
+        Calles functions to parse the user's source, destination, and sensor inputs. 
+        Sets the lists returned by the function to their respective lists in the storage class."""
+        storage.list_of_new_sources = self.parseNewSource()
+        storage.list_of_new_destinations = self.parseNewDestination()
+        storage.list_of_new_link_sensors = self.parseNewSensor()
+        print(storage.list_of_new_sources)
+        print(storage.list_of_new_destinations)
+        print(storage.list_of_new_link_sensors)
+        inp2cpaApp.hasCyberLinks = True
