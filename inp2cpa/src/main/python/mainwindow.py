@@ -25,6 +25,10 @@ class storage:
         self.list_of_new_sources = []
         self.list_of_new_destinations = []
         self.list_of_new_link_sensors = []
+        self.list_of_targets = []
+        self.list_of_icocd = []
+        self.list_of_econd = []
+        self.list_of_arg = []
 
 class importWindow(QtWidgets.QDialog):
     def __init__(self):
@@ -89,6 +93,7 @@ class inp2cpaApp(QtWidgets.QDialog):
     isAltered = False
     hasCyberLinks = False 
     hasAttacks = False
+    hasSettings = False
     def __init__(self, cpa_dict):
         """Initializes main INP2CPA window, including creating buttons linked to their respective functions. """
         super(inp2cpaApp, self).__init__()
@@ -112,9 +117,15 @@ class inp2cpaApp(QtWidgets.QDialog):
                         range(len(storage.list_of_new_destinations))
                         range(len(storage.list_of_new_link_sensors))
                         formatted_string = formatted_string + str(storage.list_of_new_sources[x]) + ',\t' + str(storage.list_of_new_destinations[x]) + ',\t' + str(storage.list_of_new_link_sensors[x]) + '\n'
-
                 else:
                     formatted_string  = formatted_string + '[CYBERLINKS]\n;Source,\tDestination,\tSensors\n'   
+                    for x in range(len(storage.list_of_new_at)):
+                        range(len(storage.list_of_new_destinations))
+                        range(len(storage.list_of_new_link_sensors))
+                        formatted_string = formatted_string + str(storage.list_of_new_sources[x]) + ',\t' + str(storage.list_of_new_destinations[x]) + ',\t' + str(storage.list_of_new_link_sensors[x]) + '\n'
+
+                if inp2cpaApp.hasAttacks:
+                    formatted_string  = formatted_string + '[CYBERLINKS]\n;Source,\tDestination,\tSensors\n' 
                 formatted_string = formatted_string + '[CYBERATTACKS]\n;Type,\tTarget,\tInit_cond,\tEnd_cond,\tArguments\n'
                 formatted_string = formatted_string + '[CYBEROPTIONS]\n' + 'verbosity'+ '\t' +'1' +'\n'
                 formatted_string = formatted_string + ';what_to_store' + '\t'+'everything'+'\n'
@@ -122,9 +133,21 @@ class inp2cpaApp(QtWidgets.QDialog):
                 return formatted_string
             else:
                 formatted_string='[CYBERNODES]\n'   
+                storage.list_of_new_plcs = []
+                storage.list_of_new_sensors = []
+                storage.list_of_new_actuators = []
+                storage.list_of_targets = []
+                storage.list_of_icocd = []
+                storage.list_of_econd = []
+                storage.list_of_arg = []
                 for PLCkey in self.cpa_dict.keys():
+                    storage.list_of_new_plcs.append(PLCkey)
                     formatted_string=formatted_string+ str(PLCkey)+'\t'
+                    for dict_entry in self.cpa_dict[PLCkey]:
+                        storage.list_of_new_sensors.append(dict_entry[0])
+                        storage.list_of_new_actuators.append(dict_entry[1])
                     sensorlist=self.cpa_dict[PLCkey][0]
+
                     removeChar='[]\''
                     senstr=','.join(map(str,sensorlist))
                     for character in removeChar:
@@ -164,10 +187,14 @@ class inp2cpaApp(QtWidgets.QDialog):
         def saveCPAfile(self):
             """Connected to the 'Save .cpa' button. 
             Exports .cpa file to users location of choice."""
-            name = str(QtWidgets.QFileDialog.getSaveFileName(self, 'Save File', '.', "(*.cpa)")[0])
+            name = str(QtWidgets.QFileDialog.getSaveFileName(None, 'Save File', '.', "(*.cpa)")[0])
             print(name)
             file = open(name,'w')
-            text = self.TextToExport
+            #formatted_string = parse_dict(self)
+            #print ('formattedString')
+            #previewBox.setPlainText(formatted_string)
+            nonlocal formatted_string
+            text = formatted_string
             file.write(text)
             file.close()
 
@@ -200,7 +227,7 @@ class inp2cpaApp(QtWidgets.QDialog):
         ### Connect Buttons
         nodesBttn.clicked.connect(lambda: (reassignfunc(self), updatePreview(self)))
         linksBttn.clicked.connect(lambda: (addLinks(self), updatePreview(self)))
-        attacksBttn.clicked.connect(addAttack)
+        attacksBttn.clicked.connect(lambda: (addAttack(self), updatePreview(self)))
         saveBttn.clicked.connect(saveCPAfile)
         
         ### layout of the dialog
@@ -275,6 +302,11 @@ class newPLCDialog(QtWidgets.QDialog):
         ### PLC field
         self.newPLCtxt = QtWidgets.QLineEdit()
         self.newPLCtxt.setMinimumWidth(700)
+        f_string = ''
+        for x in range(len(storage.list_of_new_plcs)):
+                f_string = f_string + str(storage.list_of_new_plcs[x]) + ', '
+        f_string = f_string[:-2] #subtract final comma, space
+        self.newPLCtxt.setText(f_string)
         ### Sensor field
         self.newSensortxt = QtWidgets.QLineEdit()
         self.newSensortxt.setMinimumWidth(700)
@@ -294,7 +326,7 @@ class newPLCDialog(QtWidgets.QDialog):
             self.check_changes_func()
             self.warningtxt.setText(self.warning[self.warningNo])
         def callHelpWindow (event):
-            """Connected to the '?' button.
+            """Connected to the 'Help' button.
             Calls CreateHelpWindow to create the 'Help for Re-Assigning CyberNodes' window."""
             text = ("Re-Assigning CyberNodes\n" 
                     "   This window assists in reassigning PLCs to their respective sensors and acutuators. "
@@ -355,20 +387,27 @@ class newPLCDialog(QtWidgets.QDialog):
         self.button_box.rejected.connect(self.reject)
         ### help button
         self.helpButton = QtWidgets.QPushButton()
-        self.helpButton.setText('?')
+        self.helpButton.setText('Help')
         self.helpButton.clicked.connect(callHelpWindow)
 
         ## layout of the dialog
+        outerLayout = QtWidgets.QVBoxLayout()
         layout = QtWidgets.QFormLayout()
         layout.setFieldGrowthPolicy(QtWidgets.QFormLayout.AllNonFixedFieldsGrow)
         layout.addRow('Add PLC names seperated by \',\'', self.newPLCtxt)
         layout.addRow('Add sensor groups seperated by a \'  \'' ' sensor lists seperated by \',\'', self.newSensortxt)
         layout.addRow('Add actuator groups seperated by a \'  \'' ' actuator lists seperated by \',\'', self.newActuatortxt)
         layout.addRow('Check changes',self.button_check)
-        layout.addWidget(self.button_box)
+        buttonLayout = QtWidgets.QHBoxLayout()
+        buttonLayout.addWidget(self.button_box)
+        buttonLayout.addWidget(self.helpButton)
         layout.addWidget(self.warningtxt)
+        outerLayout.addLayout(layout)
+        outerLayout.addLayout(buttonLayout)
+
+
         ### dialog show
-        self.setLayout(layout)
+        self.setLayout(outerLayout)
         self.setWindowTitle("Re-Assign Cyber Nodes")
         self.setMinimumWidth(800)   
 
@@ -376,11 +415,11 @@ class newPLCDialog(QtWidgets.QDialog):
         """Connected to the update_changes function. 
         Calls parsePLCtext, parseActuatortext, and parseSensortext to update warning."""
         storage.list_of_new_plcs = self.parsePLCtext()
-        print(storage.list_of_new_plcs)
+        #print(storage.list_of_new_plcs)
         storage.list_of_new_sensors = self.parseSensortext()
-        print(storage.list_of_new_sensors)
+        #print(storage.list_of_new_sensors)
         storage.list_of_new_actuators = self.parseActuatortext()
-        print(storage.list_of_new_actuators)
+        #print(storage.list_of_new_actuators)
         inp2cpaApp.isAltered = True
         print(self.warningNo)
         
@@ -596,6 +635,9 @@ class comm_window(QtWidgets.QDialog):
         """Called when the 'Communication' button is pressed in the Choose an Attack Type window.
         Generates a window for creating a communication CyberAttack."""
         super(comm_window, self).__init__()
+        ##Label
+        self.titleTxt = QtWidgets.QLabel('Communication Attack')
+        self.titleTxt.setMinimumWidth(350)
         ###Target
         self.targetTxt = QtWidgets.QLineEdit()
         self.targetTxt.setMinimumWidth(350)
@@ -611,6 +653,7 @@ class comm_window(QtWidgets.QDialog):
         ###buttons
         self.button_box = QtWidgets.QDialogButtonBox(QtWidgets.QDialogButtonBox.Ok | QtWidgets.QDialogButtonBox.Cancel)
         self.button_box.accepted.connect(self.accept)
+        self.button_box.accepted.connect(self.comm_check)
         self.button_box.rejected.connect(self.reject)
         ###Check changes
         self.button_check = QtWidgets.QPushButton()
@@ -619,21 +662,23 @@ class comm_window(QtWidgets.QDialog):
         ####layout
         layout = QtWidgets.QFormLayout()
         layout.setFieldGrowthPolicy(QtWidgets.QFormLayout.AllNonFixedFieldsGrow)
+        layout.addRow("Communication Attacks", self.titleTxt)
         layout.addRow('Enter the target link (i.e. P_tank1-PLC1)', self.targetTxt)
         layout.addRow('Enter the initial condition', self.initCTxt)
         layout.addRow('Enter the ending condition', self.endCTxt)
         layout.addRow('Enter the attack arguments', self.argTxt)
         layout.addRow('Check Changes',self.button_check)
+        layout.addWidget(self.button_box)
         ###show
         self.setLayout(layout)
         self.setWindowTitle("Enter attack information")
         self.setMinimumWidth(500)
 
     def comm_check(self):
-        storage.store.list_of_targets = storage.list_of_targets.extend(parseAttacks.parseTarget(self.targetTxt.text()))
-        storage.list_of_icocd = storage.list_of_icocd.extend(parseAttacks.parseICond(self.initCTxt.text()))
-        storage.list_of_econd = storage.list_of_econd.extend(parseAttacks.parseECond(self.endCTxt.text()))
-        storage.list_of_arg = storage.list_of_arg.extend(parseAttacks.parseArg(self.argTxt.text()))
+        storage.list_of_targets.extend(parseAttacks.parseTarget(self.targetTxt.text()))
+        storage.list_of_icocd.extend(parseAttacks.parseICond(self.initCTxt.text()))
+        storage.list_of_econd.extend(parseAttacks.parseECond(self.endCTxt.text()))
+        storage.list_of_arg.extend(parseAttacks.parseArg(self.argTxt.text()))
         print(storage.list_of_targets)
         print(storage.list_of_icocd)
         print(storage.list_of_econd)
@@ -660,6 +705,7 @@ class act_window(QtWidgets.QDialog):
         ###buttons
         self.button_box = QtWidgets.QDialogButtonBox(QtWidgets.QDialogButtonBox.Ok | QtWidgets.QDialogButtonBox.Cancel)
         self.button_box.accepted.connect(self.accept)
+        self.button_box.accepted.connect(self.act_check)
         self.button_box.rejected.connect(self.reject)
         ###Check changes
         self.button_check = QtWidgets.QPushButton()
@@ -673,16 +719,17 @@ class act_window(QtWidgets.QDialog):
         layout.addRow('Enter the ending condition', self.endCTxt)
         layout.addRow('Enter the attack arguments', self.argTxt)
         layout.addRow('Check Changes',self.button_check)
+        layout.addWidget(self.button_box)
         ###show
         self.setLayout(layout)
         self.setWindowTitle("Enter attack information")
         self.setMinimumWidth(500)
 
     def act_check(self):
-        storage.list_of_targets = storage.list_of_targets.extend(parseAttacks.parseTarget(self.targetTxt.text()))
-        storage.list_of_icocd = storage.list_of_icocd.extend(parseAttacks.parseICond(self.initCTxt.text()))
-        storage.list_of_econd = storage.list_of_econd.extend(parseAttacks.parseECond(self.endCTxt.text()))
-        storage.list_of_arg = storage.list_of_arg.extend(parseAttacks.parseArg(self.argTxt.text()))
+        storage.list_of_targets.extend(parseAttacks.parseTarget(self.targetTxt.text()))
+        storage.list_of_icocd.extend(parseAttacks.parseICond(self.initCTxt.text()))
+        storage.list_of_econd.extend(parseAttacks.parseECond(self.endCTxt.text()))
+        storage.list_of_arg.extend(parseAttacks.parseArg(self.argTxt.text()))
         print(storage.list_of_targets)
         print(storage.list_of_icocd)
         print(storage.list_of_econd)
@@ -709,6 +756,7 @@ class con_window(QtWidgets.QDialog):
         ###buttons
         self.button_box = QtWidgets.QDialogButtonBox(QtWidgets.QDialogButtonBox.Ok | QtWidgets.QDialogButtonBox.Cancel)
         self.button_box.accepted.connect(self.accept)
+        self.button_box.accepted.connect(self.con_check)
         self.button_box.rejected.connect(self.reject)
         ###Check changes
         self.button_check = QtWidgets.QPushButton()
@@ -722,16 +770,17 @@ class con_window(QtWidgets.QDialog):
         layout.addRow('Enter the ending condition', self.endCTxt)
         layout.addRow('Enter the attack arguments', self.argTxt)
         layout.addRow('Check Changes',self.button_check)
+        layout.addWidget(self.button_box)
         ###show
         self.setLayout(layout)
         self.setWindowTitle("Enter attack information")
         self.setMinimumWidth(500)
 
     def con_check(self):
-        storage.list_of_targets = storage.list_of_targets.extend(parseAttacks.parseTarget(self.targetTxt.text()))
-        storage.list_of_icocd = storage.list_of_icocd.extend(parseAttacks.parseICond(self.initCTxt.text()))
-        storage.list_of_econd = storage.list_of_econd.extend(parseAttacks.parseECond(self.endCTxt.text()))
-        storage.list_of_arg = storage.list_of_arg.extend(parseAttacks.parseArg(self.argTxt.text()))
+        storage.list_of_targets.extend(parseAttacks.parseTarget(self.targetTxt.text()))
+        storage.list_of_icocd.extend(parseAttacks.parseICond(self.initCTxt.text()))
+        storage.list_of_econd.extend(parseAttacks.parseECond(self.endCTxt.text()))
+        storage.list_of_arg.extend(parseAttacks.parseArg(self.argTxt.text()))
         print(storage.list_of_targets)
         print(storage.list_of_icocd)
         print(storage.list_of_econd)
@@ -758,6 +807,7 @@ class sen_window(QtWidgets.QDialog):
         ###buttons
         self.button_box = QtWidgets.QDialogButtonBox(QtWidgets.QDialogButtonBox.Ok | QtWidgets.QDialogButtonBox.Cancel)
         self.button_box.accepted.connect(self.accept)
+        self.button_box.accepted.connect(self.sen_check)
         self.button_box.rejected.connect(self.reject)
         ###Check changes
         self.button_check = QtWidgets.QPushButton()
@@ -771,6 +821,7 @@ class sen_window(QtWidgets.QDialog):
         layout.addRow('Enter the ending condition', self.endCTxt)
         layout.addRow('Enter the attack arguments', self.argTxt)
         layout.addRow('Check Changes',self.button_check)
+        layout.addWidget(self.button_box)
         ###show
         self.setLayout(layout)
         self.setWindowTitle("Enter attack information")
@@ -831,7 +882,7 @@ class cyberLinkDialog(QtWidgets.QDialog):
         super(cyberLinkDialog, self).__init__()
 
         def callHelpWindow (event):
-            """Connected to the '?' button.
+            """Connected to the 'Help' button.
             Calls CreateHelpWindow to create the 'Help for Creating CyberLinks' window."""
             text = ("Creating CyberLinks\n"
                 "   This window assists in creating CyberLinks between source and destination nodes. If CyberLinks have already been """
@@ -879,7 +930,7 @@ class cyberLinkDialog(QtWidgets.QDialog):
         self.button_box.rejected.connect(self.reject)
         ###Help button
         self.helpButton = QtWidgets.QPushButton()
-        self.helpButton.setText('?')
+        self.helpButton.setText('Help')
         self.helpButton.clicked.connect(callHelpWindow)
 
         ## create layouts 
