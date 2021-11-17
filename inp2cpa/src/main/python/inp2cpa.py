@@ -24,6 +24,8 @@ def cyberControlRead(inp_path):
     of data and sub-lists related to the various components and key properties of the topology."""
     # Read the predefined epanet controls. Also initialize some default inputs
     wn=wntr.network.WaterNetworkModel(inp_path)
+    wntr.graphics.plot_network(wn,
+        filename=str('nma_'+inp_path.split('.')[0].split('/')[len(inp_path.split('.')[0].split('/'))-1]+'.png')) ##network matplotlib axis object stored as file for viewing/utilization
     ctrls=wn.control_name_list
     # Dicts with keys CONTROLNAMES
     ctrl_orig_names={'ctrl'+str(i):x for i,x in enumerate(ctrls)}

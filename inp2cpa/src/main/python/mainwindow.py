@@ -13,6 +13,7 @@ import re
 import wntr
 import inp2cpa
 
+cybertopo = {}
 cpa_dict = None
 pathName = ""
 
@@ -26,9 +27,29 @@ class storage:
         self.list_of_new_destinations = []
         self.list_of_new_link_sensors = []
         self.list_of_targets = []
-        self.list_of_icocd = []
+        self.list_of_icond = []
         self.list_of_econd = []
         self.list_of_arg = []
+
+class network:
+
+    class links:
+    #each link can only have one source and destination, but a list of sensor data to transfer
+    #links can additionally (optionally) contain arguments identifying communication protocol(s) in use along this connection
+        def link(self):
+            source = ''
+            destination = ''
+            sensors = []
+            protocols = {}
+    #nodes have a single name, but a list of sensors and actuators 
+    ## potential future assignment of controls to individual PLC, RTU, and/or HMI devices, with redundant assignments and connections as failsafes?
+    class nodes:
+        def node(self):
+            node = ''
+            sensors = []
+            actuators = []
+            # controls = []
+    #
 
 class importWindow(QtWidgets.QDialog):
     def __init__(self):
@@ -58,6 +79,8 @@ class importWindow(QtWidgets.QDialog):
                 cyberTopo=inp2cpa.cyberControlRead(in_inpfile)
                 global cpa_dict
                 cpa_dict = inp2cpa.create_topology_cpa_dict(cyberTopo)
+                for key in cyberTopo.keys():
+                    print(str(key) + " : " + str(cyberTopo[key]) + "\n")
             else:
                 pathname.setText('Nothing Imported!')
 
@@ -119,14 +142,14 @@ class inp2cpaApp(QtWidgets.QDialog):
                         formatted_string = formatted_string + str(storage.list_of_new_sources[x]) + ',\t' + str(storage.list_of_new_destinations[x]) + ',\t' + str(storage.list_of_new_link_sensors[x]) + '\n'
                 else:
                     formatted_string  = formatted_string + '[CYBERLINKS]\n;Source,\tDestination,\tSensors\n'   
-                    for x in range(len(storage.list_of_new_at)):
-                        range(len(storage.list_of_new_destinations))
-                        range(len(storage.list_of_new_link_sensors))
-                        formatted_string = formatted_string + str(storage.list_of_new_sources[x]) + ',\t' + str(storage.list_of_new_destinations[x]) + ',\t' + str(storage.list_of_new_link_sensors[x]) + '\n'
 
                 if inp2cpaApp.hasAttacks:
-                    formatted_string  = formatted_string + '[CYBERLINKS]\n;Source,\tDestination,\tSensors\n' 
-                formatted_string = formatted_string + '[CYBERATTACKS]\n;Type,\tTarget,\tInit_cond,\tEnd_cond,\tArguments\n'
+                    formatted_string  = formatted_string + '[CYBERATTACKS]\n;Source,\tDestination,\tSensors\n' 
+                    for x in range(len(storage.list_of_targets)):
+                        formatted_string = formatted_string + str(storage.list_of_targets[x]) + ',\t' + str(storage.list_of_icond[x]) + ',\t' + str(storage.list_of_econd[x]) + ',\t' + str(storage.list_of_arg[x])+ '\n'
+                else:
+                    formatted_string = formatted_string + '[CYBERATTACKS]\n;Type,\tTarget,\tInit_cond,\tEnd_cond,\tArguments\n'
+                
                 formatted_string = formatted_string + '[CYBEROPTIONS]\n' + 'verbosity'+ '\t' +'1' +'\n'
                 formatted_string = formatted_string + ';what_to_store' + '\t'+'everything'+'\n'
                 formatted_string = formatted_string + ';pda_options' + '\t' + '0.5' + '\t' + '0' + '\t' + '20' + '\t' + 'Wagner'
@@ -137,7 +160,7 @@ class inp2cpaApp(QtWidgets.QDialog):
                 storage.list_of_new_sensors = []
                 storage.list_of_new_actuators = []
                 storage.list_of_targets = []
-                storage.list_of_icocd = []
+                storage.list_of_icond = []
                 storage.list_of_econd = []
                 storage.list_of_arg = []
                 for PLCkey in self.cpa_dict.keys():
@@ -221,7 +244,7 @@ class inp2cpaApp(QtWidgets.QDialog):
                 previewBox.setFocus()
             if (temp):
                 formatted_string = parse_dict(self)
-                print ('formattedString')
+                print (formatted_string)
                 previewBox.setPlainText(formatted_string)
 
         ### Connect Buttons
@@ -291,7 +314,7 @@ class PreviewDialog(QtWidgets.QDialog):
         
 class newPLCDialog(QtWidgets.QDialog):
     warningNo = 0
-    warning=['', 'Warning: Format each cybernode with only one underscore', 'Warning: No PLCs entered']
+    warning=['', 'Warning: Format each cybernode with only one underscore', 'Warning: No PLCs entered','Warning: Invalid sensor names, check prefix formatting requirements']
     def __init__(self, cpa_dict):
         """Called by the reassignfunc function. 
         Creates the Re-Assign CyberNodes window allowing users to reassign cybernodes through the GUI."""
@@ -435,10 +458,10 @@ class newPLCDialog(QtWidgets.QDialog):
             self.warningNo=2
         text=text.split(',')
         for plc in text:
+            if(len(plc)!=0): 
+                plc = plc.lstrip()
             if (re.search('_.*_', plc)):
                 self.warningNo=1
-            if (len(text)==0):
-                self.warningNo=2
             list_of_new_plcs.append(plc)
         return list_of_new_plcs
     
@@ -472,11 +495,14 @@ class newPLCDialog(QtWidgets.QDialog):
         for sensorGroup in text:
             indivSensor = sensorGroup.split(' ')
             for sensor in indivSensor:
+                if(len(sensor)!=0): 
+                    sensor = sensor.lstrip()
                 if (re.search('_.*_', sensor)):
                     tempWarning=1
                     # print ('__ ',tempWarning)
-                if not (re.search('^S_', sensor) or re.search('^F_', sensor) or re.search('^P_', sensor) or re.search ('^SE_', sensor)):                    
-                    tempWarning=2
+                if not (re.search('^S_', sensor) or re.search('^F_', sensor) or re.search('^P_', sensor) or re.search ('^SE_', sensor)) and len(sensor)!=0:                    
+                    tempWarning=3
+                    #print('tempWarning set by parseSensor')
                     # print ('incorrect prefix ', tempWarning)
             list_of_new_sensors.append(sensorGroup)
         self.warningNo = tempWarning
@@ -506,8 +532,14 @@ class newPLCDialog(QtWidgets.QDialog):
         text = self.newActuatortxt.text()
         text = text.split(',')
         for actuator in text:
+            if(len(actuator)!=0): 
+                actuator = actuator.lstrip()
             list_of_new_actuators.append(actuator)
         return list_of_new_actuators
+    
+    def parseAttackText(self):
+        list_of_targets = []
+
 
 ##class cyberLinkDialog(QtWidgets.QDialog):
    ## def __init__(self, cpa_dict):
@@ -676,11 +708,11 @@ class comm_window(QtWidgets.QDialog):
 
     def comm_check(self):
         storage.list_of_targets.extend(parseAttacks.parseTarget(self.targetTxt.text()))
-        storage.list_of_icocd.extend(parseAttacks.parseICond(self.initCTxt.text()))
+        storage.list_of_icond.extend(parseAttacks.parseICond(self.initCTxt.text()))
         storage.list_of_econd.extend(parseAttacks.parseECond(self.endCTxt.text()))
         storage.list_of_arg.extend(parseAttacks.parseArg(self.argTxt.text()))
         print(storage.list_of_targets)
-        print(storage.list_of_icocd)
+        print(storage.list_of_icond)
         print(storage.list_of_econd)
         print(storage.list_of_arg)
         inp2cpaApp.hasAttacks = True
@@ -727,11 +759,11 @@ class act_window(QtWidgets.QDialog):
 
     def act_check(self):
         storage.list_of_targets.extend(parseAttacks.parseTarget(self.targetTxt.text()))
-        storage.list_of_icocd.extend(parseAttacks.parseICond(self.initCTxt.text()))
+        storage.list_of_icond.extend(parseAttacks.parseICond(self.initCTxt.text()))
         storage.list_of_econd.extend(parseAttacks.parseECond(self.endCTxt.text()))
         storage.list_of_arg.extend(parseAttacks.parseArg(self.argTxt.text()))
         print(storage.list_of_targets)
-        print(storage.list_of_icocd)
+        print(storage.list_of_icond)
         print(storage.list_of_econd)
         print(storage.list_of_arg)
         inp2cpaApp.hasAttacks = True
@@ -778,11 +810,11 @@ class con_window(QtWidgets.QDialog):
 
     def con_check(self):
         storage.list_of_targets.extend(parseAttacks.parseTarget(self.targetTxt.text()))
-        storage.list_of_icocd.extend(parseAttacks.parseICond(self.initCTxt.text()))
+        storage.list_of_cond.extend(parseAttacks.parseICond(self.initCTxt.text()))
         storage.list_of_econd.extend(parseAttacks.parseECond(self.endCTxt.text()))
         storage.list_of_arg.extend(parseAttacks.parseArg(self.argTxt.text()))
         print(storage.list_of_targets)
-        print(storage.list_of_icocd)
+        print(storage.list_of_icond)
         print(storage.list_of_econd)
         print(storage.list_of_arg)
         inp2cpaApp.hasAttacks = True
@@ -833,11 +865,11 @@ class sen_window(QtWidgets.QDialog):
         #storage.list_of_econd = storage.list_of_econd.extend(parseAttacks.parseECond(self.endCTxt.text()))
         #storage.list_of_arg = storage.list_of_arg.extend(parseAttacks.parseArg(self.argTxt.text()))
         storage.list_of_targets.extend(parseAttacks.parseTarget(self.targetTxt.text()))
-        storage.list_of_icocd.extend(parseAttacks.parseICond(self.initCTxt.text()))
+        storage.list_of_icond.extend(parseAttacks.parseICond(self.initCTxt.text()))
         storage.list_of_econd.extend(parseAttacks.parseECond(self.endCTxt.text()))
         storage.list_of_arg.extend(parseAttacks.parseArg(self.argTxt.text()))
         print(storage.list_of_targets)
-        print(storage.list_of_icocd)
+        print(storage.list_of_icond)
         print(storage.list_of_econd)
         print(storage.list_of_arg)
         inp2cpaApp.hasAttacks = True
