@@ -8,6 +8,10 @@ from PyQt5.QtCore import QThread, pyqtSignal, pyqtSlot
 from PyQt5.QtCore import *
 from PyQt5.QtWidgets import *
 
+#graph theory imports
+from collections import deque
+import math
+
 import re
 
 import wntr
@@ -32,24 +36,99 @@ class storage:
         self.list_of_arg = []
 
 class network:
+    node_net = []
+    link_net = []
+    prop_set = []
 
     class links:
     #each link can only have one source and destination, but a list of sensor data to transfer
     #links can additionally (optionally) contain arguments identifying communication protocol(s) in use along this connection
-        def link(self):
-            source = ''
-            destination = ''
-            sensors = []
-            protocols = {}
-    #nodes have a single name, but a list of sensors and actuators 
+        def __init__(self):
+            self.source = ''
+            self.destination = ''
+            self.sensors = []
+            self.protocols = {}
+    #nodes have a single name, but a list of sensors and actuators, as well as log of which nodes they themselves connect to
     ## potential future assignment of controls to individual PLC, RTU, and/or HMI devices, with redundant assignments and connections as failsafes?
     class nodes:
-        def node(self):
-            node = ''
-            sensors = []
-            actuators = []
-            # controls = []
-    #
+        def __init__(self):
+            self.id = ''
+            self.sensors = []
+            self.actuators = []
+            self.controls = []
+            self.linked_nodes = []
+
+    # total graph diversity (TGD)
+    def tgd(self):
+        runsum = 0
+        cnt = 0
+        for node in self.node_net:
+            print(node)
+            for node2 in self.node_net:
+                if node != node2:
+                    print(node2)
+                    cnt += 1
+                    runsum += self.epd(self, node, node2)
+        return runsum/cnt
+
+    #effective path diversity (epd): 1 here filling for lambda, an experimentally-selected value weighting
+    # utility of additional paths. Lower values indicate higher utility of additional paths, and vice versa
+    def epd(self, node_S, node_D):
+        return 1 - math.exp(-1*self.pathDiv(self, node_S, node_D))
+
+    # calculate individual path diversity between nodes
+    def pathDiv(self, node_S, node_D):
+        if(self.node_net.__contains__(node_S) and self.node_net.__contains__(node_D)): 
+            ksd = 0
+            p0 = self.find_shortest_path(self, self.node_net, node_S, node_D)
+            for path in self.find_all_paths(self, self.node_net, node_S, node_D):
+                ksd += len(path)
+            return ksd
+        else: 
+            print('One or more nodes DNE in network.')
+            return 0
+
+    #Code from https://www.python.org/doc/essays/graphs/
+    def find_path(self, graph, start, end, path=[]):
+        path = path + [start]
+        if start == end:
+            return path
+        if not graph.__contains__(start):
+            return None
+        for node in graph[start]:
+            if node not in path:
+                newpath = self.find_path(graph, node, end, path)
+                if newpath: return newpath
+        return None
+    #Code adapted from https://www.python.org/doc/essays/graphs/    
+    def find_all_paths(self, graph, start, end, path=[]):
+        path = path + [start]
+        if start == end:
+            return [path]
+        if not graph.__contains__(start):
+            return []
+        paths = []
+        for node in start.linked_nodes:
+            if node not in path:
+                newpaths = self.find_all_paths(graph, node, end, path)
+                for newpath in newpaths:
+                    paths.append(newpath)
+        return paths
+    #Code from https://www.python.org/doc/essays/graphs/
+    def find_shortest_path(self, graph, start, end, path=[]):
+        path = path + [start]
+        if start == end:
+            return path
+        if not graph.__contains__(start):
+            return None
+        shortest = None
+        for node in start.linked_nodes:
+            if node not in path:
+                newpath = self.find_shortest_path(graph, node, end, path)
+                if newpath:
+                    if not shortest or len(newpath) < len(shortest):
+                        shortest = newpath
+        return shortest
 
 class importWindow(QtWidgets.QDialog):
     def __init__(self):
@@ -130,16 +209,30 @@ class inp2cpaApp(QtWidgets.QDialog):
             Parses imported .inp file, and creates the base/starting .cpa file from the import, stored in the storage class."""
             if inp2cpaApp.isAltered:
                 formatted_string = '[CYBERNODES]\n;Name,\tSensors,\tActuators\n'
+                network.node_net = []
                 for x in range(len(storage.list_of_new_plcs)):
                     range(len(storage.list_of_new_sensors))
                     range(len(storage.list_of_new_actuators))
                     formatted_string = formatted_string + str(storage.list_of_new_plcs[x]) + ',\t' + str(storage.list_of_new_sensors[x]) + ',\t' + str(storage.list_of_new_actuators[x]) + '\n'
+                    tempNode = network.nodes()
+                    tempNode.id = str(storage.list_of_new_plcs[x])
+                    tempNode.sensors.append(storage.list_of_new_sensors[x])
+                    tempNode.actuators.append(storage.list_of_new_actuators[x])
+                    
+                    # no connected nodes at initialization -- may want to add in future updates
+                    network.node_net.append(tempNode)
+                network.link_net = []
                 if inp2cpaApp.hasCyberLinks:
                     formatted_string  = formatted_string + '[CYBERLINKS]\n;Source,\tDestination,\tSensors\n' 
                     for x in range(len(storage.list_of_new_sources)):
                         range(len(storage.list_of_new_destinations))
                         range(len(storage.list_of_new_link_sensors))
                         formatted_string = formatted_string + str(storage.list_of_new_sources[x]) + ',\t' + str(storage.list_of_new_destinations[x]) + ',\t' + str(storage.list_of_new_link_sensors[x]) + '\n'
+                        tempLink = network.links()
+                        tempLink.source = str(storage.list_of_new_sources[x])
+                        tempLink.destination = str(storage.list_of_new_destinations[x])
+                        tempLink.sensors.append(storage.list_of_new_link_sensors[x])
+                        network.link_net.append(tempLink)
                 else:
                     formatted_string  = formatted_string + '[CYBERLINKS]\n;Source,\tDestination,\tSensors\n'   
 
@@ -163,12 +256,18 @@ class inp2cpaApp(QtWidgets.QDialog):
                 storage.list_of_icond = []
                 storage.list_of_econd = []
                 storage.list_of_arg = []
+                network.node_net = []
                 for PLCkey in self.cpa_dict.keys():
                     storage.list_of_new_plcs.append(PLCkey)
+                    tempNode = network.nodes()
+                    tempNode.id = str(PLCkey)
                     formatted_string=formatted_string+ str(PLCkey)+'\t'
                     for dict_entry in self.cpa_dict[PLCkey]:
                         storage.list_of_new_sensors.append(dict_entry[0])
                         storage.list_of_new_actuators.append(dict_entry[1])
+                        tempNode.sensors = dict_entry[0]
+                        tempNode.actuators = dict_entry[1]
+                        network.node_net.append(tempNode)
                     sensorlist=self.cpa_dict[PLCkey][0]
 
                     removeChar='[]\''
@@ -181,6 +280,7 @@ class inp2cpaApp(QtWidgets.QDialog):
                     for character in removeChar:
                         actstr = actstr.replace(character, '')
                 formatted_string = formatted_string+ actstr+'\n'
+                formatted_string  = formatted_string+'[CYBERLINKS]\n;Source,\tDestination,\tSensors\n' 
                 formatted_string = formatted_string+'[CYBERATTACKS]'+'\n'+'[CYBEROPTIONS]'+'\n' + 'verbosity'+'\t'+'1'+'\n'
                 formatted_string = formatted_string+'what_to_store' + '\t'+'everything'+'\n'
                 formatted_string = formatted_string+'pda_options' + '\t'+'0.5'+'\t'+'0'+'\t'+'20'+'\t'+'Wagner'
@@ -188,23 +288,30 @@ class inp2cpaApp(QtWidgets.QDialog):
 
         def reassignfunc(self):
             """Connected to the 'Re-Assign CyberNodes' button. 
-            This function calles the newPLCDialog function (creates the Re-Assign CyberNodes window)."""
+            This function calls the newPLCDialog function (creates the Re-Assign CyberNodes window)."""
             newPLCDlg=newPLCDialog(cpa_dict)
             if newPLCDlg.exec_():
                 pass
 
         def addLinks(self):
             """Connected to the 'Create CyberLinks' button. 
-            This function calles the CyberLinkDialog function (creates the Create CyberLinks window)."""
+            This function calls the cyberLinkDialog function (creates the Create CyberLinks window)."""
             newLinkDlg = cyberLinkDialog(cpa_dict)
             if newLinkDlg.exec_():
                 pass
         
         def addAttack(self):
             """Connected to the 'Create CyberAttacks' button. 
-            This function calles the cyberAttackDialog function (creates the Choose an Attack Type window)."""
+            This function calls the cyberAttackDialog function (creates the Choose an Attack Type window)."""
             attackDlg = cyberAttackDialog(cpa_dict)
             if attackDlg.exec_():
+                pass
+
+        def resCheck(self):
+            """Connected to the 'Check Resiliency' button.
+            This function calls the cyberResiliencyCheck function (creates the Resiliency Check window)."""
+            resilDlg = cyberResiliencyCheck(network)
+            if resilDlg.exec_():
                 pass
         
         def saveCPAfile(self):
@@ -229,6 +336,7 @@ class inp2cpaApp(QtWidgets.QDialog):
         nodesBttn = QPushButton('Re-Assign CyberNodes')
         linksBttn = QPushButton('Create CyberLinks')
         attacksBttn = QPushButton('Create CyberAttacks')
+        resilSuggBttn = QPushButton('Resiliency Check')
         saveBttn = QPushButton('Save')
         saveBttn.setDefault(True)
         verticalSpacer = QtWidgets.QSpacerItem(60, 10, QtWidgets.QSizePolicy.Minimum, QtWidgets.QSizePolicy.Expanding) 
@@ -240,7 +348,7 @@ class inp2cpaApp(QtWidgets.QDialog):
             temp = False
             while (temp == False):
                 temp = previewBox.hasFocus()
-                print (temp)
+                #print (temp)
                 previewBox.setFocus()
             if (temp):
                 formatted_string = parse_dict(self)
@@ -251,6 +359,7 @@ class inp2cpaApp(QtWidgets.QDialog):
         nodesBttn.clicked.connect(lambda: (reassignfunc(self), updatePreview(self)))
         linksBttn.clicked.connect(lambda: (addLinks(self), updatePreview(self)))
         attacksBttn.clicked.connect(lambda: (addAttack(self), updatePreview(self)))
+        resilSuggBttn.clicked.connect(lambda: (resCheck(self), updatePreview(self)))
         saveBttn.clicked.connect(saveCPAfile)
         
         ### layout of the dialog
@@ -264,6 +373,7 @@ class inp2cpaApp(QtWidgets.QDialog):
         buttonLayout.addWidget(nodesBttn)
         buttonLayout.addWidget(linksBttn)
         buttonLayout.addWidget(attacksBttn)
+        buttonLayout.addWidget(resilSuggBttn)
         buttonLayout.addSpacerItem(verticalSpacer)
         buttonLayout.addWidget(saveBttn)
         outerLayout.addLayout(mainLayout)
@@ -463,6 +573,7 @@ class newPLCDialog(QtWidgets.QDialog):
             if (re.search('_.*_', plc)):
                 self.warningNo=1
             list_of_new_plcs.append(plc)
+
         return list_of_new_plcs
     
     # def parseSensortext(self):
@@ -1047,7 +1158,163 @@ class cyberLinkDialog(QtWidgets.QDialog):
         storage.list_of_new_sources = self.parseNewSource()
         storage.list_of_new_destinations = self.parseNewDestination()
         storage.list_of_new_link_sensors = self.parseNewSensor()
+        network.link_net = []
+        for source in range(len(storage.list_of_new_sources)):
+            temp_link = network.links()
+            temp_link.source = storage.list_of_new_sources[source]
+            temp_link.destination = storage.list_of_new_destinations[source]
+            temp_link.sensors = storage.list_of_new_link_sensors[source]
+            #update internal network tracker at the same time
+            network.node_net[source].linked_nodes = storage.list_of_new_destinations[source]
+
         print(storage.list_of_new_sources)
         print(storage.list_of_new_destinations)
         print(storage.list_of_new_link_sensors)
         inp2cpaApp.hasCyberLinks = True
+
+class cyberResiliencyCheck(QtWidgets.QDialog):
+    def __init__(self, network):
+        """Called by the addLinks function. 
+        Creates the Resiliency Check window allowing users to evaluate cyberlinks and node properties through the GUI for basic resiliency/connectivity properties."""
+        super(cyberResiliencyCheck, self).__init__()
+
+        def callHelpWindow (event):
+            """Connected to the 'Help' button.
+            Calls CreateHelpWindow to create the 'Help for Resliency Checking' window."""
+            text = ("Checking Resliency\n"
+                "   This window assists in evaluating existing network connections and potential resliency between source and destination nodes."""
+                " If CyberLinks have already been """
+                "created, the CyberLinks saved from this window will replace the current CyberLinks in the .cpa file.\n\n"
+                "'Source Names' Field\n"
+                "   Enter the sources into the text field, separated by commas. Sources should not be separated by spaces, "
+                "or a comma and a space, as the space will be added to the source name.\n\n"
+                "'Destination Names' Field\n"
+                "   Enter the destinations into the text field, separated by commas. The destinations should be listed in the same "
+                "order as their corresponding sources. Destinations should not be separated by spaces, "
+                "or a comma and a space, as the space will be added to the destination name.\n\n"
+                "'Sensors' Field\n"
+                "   Enter the sensors into the text field, separated by commas. The sensors should be listed in the same "
+                "order as their corresponding sources. Sensors should not be separated by spaces, "
+                "or a comma and a space, as the space will be added to the source name.\n\n"
+                "Example: \n"
+                "Source Names: PLC1,PLC1\n"
+                "Destination Names: PLC2,SCADA\n"
+                "Sensors: P_TANK,P_TANK\n\n"
+                "   In the above example, there is a CyberLink from PLC1 to PLC2, sending information collected by the P_TANK sensor, "
+                "and a CyberLink from PLC1 to SCADA, also sending information collected the P_TANK sensor.\n\n"
+                "   After the changes are submitted by selecting the 'Ok' button, the new .cpa file [CYBERLINKS] section should read:\n"
+                ";Source, Destination, Sensors\n"
+                "PLC1,  PLC2,   P_TANK\n"
+                "PLC1,  SCADA,  P_TANK")
+            windowTitle = "Help for Checking Resliency"
+            newWindow=CreateHelpWindow(text, windowTitle)
+            if newWindow.exec_():
+                pass
+        print("Test TGD: " + str(network.tgd(network)))
+        ###Source field
+        self.newSourcetxt = QtWidgets.QLineEdit()
+        ###Destination field
+        self.newDestinationtxt = QtWidgets.QLineEdit()
+        ###Sensor field
+        self.newSensortxt = QtWidgets.QLineEdit()
+        # ###Check changes
+        # self.button_check = QtWidgets.QPushButton()
+        # self.button_check.setText('Check Changes')
+        # self.button_check.clicked.connect(self.link_check)
+
+        ###Button ok/cancel
+        self.button_box = QtWidgets.QDialogButtonBox(QtWidgets.QDialogButtonBox.Ok | QtWidgets.QDialogButtonBox.Cancel)
+        self.button_box.accepted.connect(lambda: (self.link_check(), self.close()))
+        self.button_box.rejected.connect(self.reject)
+        ###Help button
+        self.helpButton = QtWidgets.QPushButton()
+        self.helpButton.setText('Help')
+        self.helpButton.clicked.connect(callHelpWindow)
+
+        ## create layouts 
+        outerLayout = QtWidgets.QVBoxLayout()
+        layout = QtWidgets.QVBoxLayout()
+        buttonLayout = QtWidgets.QHBoxLayout()
+
+        myFont = QtGui.QFont()
+        myFont.setBold(True)
+
+        ### Label and entry layout
+        sourceNames = QLabel('Source Names')
+        sourceNames.setFont(myFont)
+        layout.addWidget(sourceNames)
+        layout.addWidget(QLabel('Separate each source name by \',\''))
+        layout.addWidget(self.newSourcetxt)
+        destinationNames = QLabel('Destination Names')
+        destinationNames.setFont(myFont)
+        layout.addWidget(destinationNames)
+        layout.addWidget(QLabel('Separate destination names by \',\''))
+        layout.addWidget(self.newDestinationtxt)
+        actuators = QLabel('Sensors')
+        actuators.setFont(myFont)
+        layout.addWidget(actuators)
+        layout.addWidget(QLabel('Separate sensor names by \',\''))
+        layout.addWidget(self.newSensortxt)
+        layout.addWidget(QLabel(""))
+
+        ### Check changes and ok/cancel buttons
+        # buttonLayout.addWidget(self.button_check) 
+        buttonLayout.addWidget(self.button_box)
+        buttonLayout.addWidget(self.helpButton)
+
+        ### Set layouts
+        outerLayout.addLayout(layout)
+        outerLayout.addLayout(buttonLayout)
+        self.setLayout(outerLayout)
+
+        ### Set window properties
+        self.setWindowTitle("Create CyberLinks")
+        # self.setFixedWidth(600)
+        # self.setFixedHeight(350) 
+        self.resize(600, 350)
+        self.setMaximumSize(900, 500)
+
+    def parseNewSource(self):
+        """Called by the link_check function. 
+        Seperates the user's input by commas, adds the sources to a list, and returns the list."""
+        list_of_sources=[]
+        text=self.newSourcetxt.text()
+        text=text.replace(' ','')
+        text=text.split(',')
+        for source in text:
+            list_of_sources.append(source)
+        return list_of_sources
+
+    def parseNewDestination(self):
+        """Called by the link_check function.
+        Seperates the user's input by commas, adds the destinations to a list, and returns the list."""
+        list_of_destinations=[]
+        text=self.newDestinationtxt.text()
+        text=text.replace(' ','')
+        text=text.split(',')
+        for destination in text:
+            list_of_destinations.append(destination)
+        return list_of_destinations
+
+    def parseNewSensor(self):
+        """Called by the link_check function.
+        Seperates the user's input by commas, adds the sensors to a list, and returns the list."""
+        list_of_sensors=[]
+        text=self.newSensortxt.text()
+        text=text.split(',')
+        for sensor in text:
+            list_of_sensors.append(sensor)
+        return list_of_sensors
+
+    def link_check(self):
+        """Called when the 'Check Changes' button is clicked.
+        Calles functions to parse the user's source, destination, and sensor inputs. 
+        Sets the lists returned by the function to their respective lists in the storage class."""
+        storage.list_of_new_sources = self.parseNewSource()
+        storage.list_of_new_destinations = self.parseNewDestination()
+        storage.list_of_new_link_sensors = self.parseNewSensor()
+        print(storage.list_of_new_sources)
+        print(storage.list_of_new_destinations)
+        print(storage.list_of_new_link_sensors)
+        inp2cpaApp.hasCyberLinks = True
+

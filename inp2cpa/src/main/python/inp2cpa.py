@@ -2,7 +2,7 @@
 """
 Created on Tue Jun  9 14:27:25 2020
 
-@author: dionisis
+@author: dionisis, camsewell, sotoole
 """
 
 # import sys
