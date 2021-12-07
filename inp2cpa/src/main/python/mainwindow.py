@@ -60,29 +60,44 @@ class network:
 
     # total graph diversity (TGD)
     def tgd(self):
-        runsum = 0
+        runsumArr = []
         cnt = 0
-        for node in self.node_net:
-            print(node)
-            for node2 in self.node_net:
-                if node != node2:
-                    print(node2)
-                    cnt += 1
-                    runsum += self.epd(self, node, node2)
-        return runsum/cnt
+        for lam in [0.2, 1, 5]:
+            runsum = 0
+            cnt = 0
+            for node in self.node_net:
+                #print(node.linked_nodes)
+                for node2 in self.node_net:
+                    if node != node2:
+                        #print(node.id + " to " + node2.id)
+                        cnt += 1
+                        runsum += self.epd(self, lam, node, node2)
+                        
+            runsumArr.append(runsum/cnt)
+        return runsumArr
 
     #effective path diversity (epd): 1 here filling for lambda, an experimentally-selected value weighting
     # utility of additional paths. Lower values indicate higher utility of additional paths, and vice versa
-    def epd(self, node_S, node_D):
-        return 1 - math.exp(-1*self.pathDiv(self, node_S, node_D))
+    def epd(self, lam, node_S, node_D):
+        return 1 - math.exp(-lam*self.pathDiv(self, node_S, node_D))
 
     # calculate individual path diversity between nodes
     def pathDiv(self, node_S, node_D):
         if(self.node_net.__contains__(node_S) and self.node_net.__contains__(node_D)): 
             ksd = 0
+            best = []
+            temp_ksd = 999
             p0 = self.find_shortest_path(self, self.node_net, node_S, node_D)
             for path in self.find_all_paths(self, self.node_net, node_S, node_D):
-                ksd += len(path)
+                #find minimum ksd
+                if path != p0 and 1-(len(set(p0)^set(path))/len(path)) < temp_ksd: 
+                    temp_ksd = 1-(len(set(p0)^set(path))/len(path))
+                    best = path
+            if len(best) == 0: #no other paths found, 0 path diversity
+                #print("Zero path div between " + node_S.id  + " and " + node_D.id)
+                ksd = 0
+            else:        
+                ksd += 1-(len(set(p0)^set(best))/len(best))
             return ksd
         else: 
             print('One or more nodes DNE in network.')
@@ -103,28 +118,32 @@ class network:
     #Code adapted from https://www.python.org/doc/essays/graphs/    
     def find_all_paths(self, graph, start, end, path=[]):
         path = path + [start]
-        if start == end:
+        if start.id == end.id:
+            #print(path)
             return [path]
-        if not graph.__contains__(start):
+        if not any(x.id == start.id for x in graph): #start in graph:
             return []
         paths = []
         for node in start.linked_nodes:
-            if node not in path:
-                newpaths = self.find_all_paths(graph, node, end, path)
+            nodeObj = next((x for x in graph if x.id == node), None)
+            if nodeObj not in path:
+                newpaths = self.find_all_paths(self, graph, nodeObj, end, path)
                 for newpath in newpaths:
-                    paths.append(newpath)
+                    if newpath not in paths:
+                        paths.append(newpath)
         return paths
     #Code from https://www.python.org/doc/essays/graphs/
     def find_shortest_path(self, graph, start, end, path=[]):
         path = path + [start]
         if start == end:
             return path
-        if not graph.__contains__(start):
+        if not any(x.id == start.id for x in graph):
             return None
         shortest = None
         for node in start.linked_nodes:
-            if node not in path:
-                newpath = self.find_shortest_path(graph, node, end, path)
+            nodeObj = next((x for x in graph if x.id == node), None)
+            if nodeObj not in path:
+                newpath = self.find_shortest_path(self, graph, nodeObj, end, path)
                 if newpath:
                     if not shortest or len(newpath) < len(shortest):
                         shortest = newpath
@@ -232,6 +251,9 @@ class inp2cpaApp(QtWidgets.QDialog):
                         tempLink.source = str(storage.list_of_new_sources[x])
                         tempLink.destination = str(storage.list_of_new_destinations[x])
                         tempLink.sensors.append(storage.list_of_new_link_sensors[x])
+                        for node in network.node_net:
+                            if tempLink.source == node.id:
+                                node.linked_nodes.append(storage.list_of_new_destinations[x])
                         network.link_net.append(tempLink)
                 else:
                     formatted_string  = formatted_string + '[CYBERLINKS]\n;Source,\tDestination,\tSensors\n'   
@@ -345,21 +367,21 @@ class inp2cpaApp(QtWidgets.QDialog):
             """Called bythe Re-Assign CyberNodes and Create CyberLinks buttons.
             Creates a while loop, checking to see when the main window is refocused, and then updates the .cpa preview text."""
             print ('updatePreview called')
-            temp = False
-            while (temp == False):
-                temp = previewBox.hasFocus()
+            #temp = False
+            #while (temp == False):
+            #    temp = previewBox.hasFocus()
                 #print (temp)
-                previewBox.setFocus()
-            if (temp):
-                formatted_string = parse_dict(self)
-                print (formatted_string)
-                previewBox.setPlainText(formatted_string)
+            previewBox.setFocus()
+            #if (temp):
+            formatted_string = parse_dict(self)
+            #print (formatted_string)
+            previewBox.setPlainText(formatted_string)
 
         ### Connect Buttons
         nodesBttn.clicked.connect(lambda: (reassignfunc(self), updatePreview(self)))
         linksBttn.clicked.connect(lambda: (addLinks(self), updatePreview(self)))
         attacksBttn.clicked.connect(lambda: (addAttack(self), updatePreview(self)))
-        resilSuggBttn.clicked.connect(lambda: (resCheck(self), updatePreview(self)))
+        resilSuggBttn.clicked.connect(lambda: (print("Test TGD: " + str(network.tgd(network))), updatePreview(self)))
         saveBttn.clicked.connect(saveCPAfile)
         
         ### layout of the dialog
@@ -547,12 +569,21 @@ class newPLCDialog(QtWidgets.QDialog):
     def check_changes_func(self):
         """Connected to the update_changes function. 
         Calls parsePLCtext, parseActuatortext, and parseSensortext to update warning."""
+        network.node_net = []
         storage.list_of_new_plcs = self.parsePLCtext()
         #print(storage.list_of_new_plcs)
         storage.list_of_new_sensors = self.parseSensortext()
+        network
         #print(storage.list_of_new_sensors)
         storage.list_of_new_actuators = self.parseActuatortext()
         #print(storage.list_of_new_actuators)
+        for node_num in range(len(storage.list_of_new_plcs)):
+            temp_node = network.nodes()
+            temp_node.id = storage.list_of_new_plcs[node_num]
+            temp_node.sensors = storage.list_of_new_sensors[node_num]
+            temp_node.actuators =  storage.list_of_new_actuators[node_num]
+            temp_node.linked_nodes = []
+            network.node_net.append(temp_node)
         inp2cpaApp.isAltered = True
         print(self.warningNo)
         
@@ -573,7 +604,6 @@ class newPLCDialog(QtWidgets.QDialog):
             if (re.search('_.*_', plc)):
                 self.warningNo=1
             list_of_new_plcs.append(plc)
-
         return list_of_new_plcs
     
     # def parseSensortext(self):
@@ -1063,9 +1093,9 @@ class cyberLinkDialog(QtWidgets.QDialog):
         ###Sensor field
         self.newSensortxt = QtWidgets.QLineEdit()
         # ###Check changes
-        # self.button_check = QtWidgets.QPushButton()
-        # self.button_check.setText('Check Changes')
-        # self.button_check.clicked.connect(self.link_check)
+        self.button_check = QtWidgets.QPushButton()
+        self.button_check.setText('Check Changes')
+        self.button_check.clicked.connect(self.link_check)
 
         ###Button ok/cancel
         self.button_box = QtWidgets.QDialogButtonBox(QtWidgets.QDialogButtonBox.Ok | QtWidgets.QDialogButtonBox.Cancel)
@@ -1103,7 +1133,7 @@ class cyberLinkDialog(QtWidgets.QDialog):
         layout.addWidget(QLabel(""))
 
         ### Check changes and ok/cancel buttons
-        # buttonLayout.addWidget(self.button_check) 
+        buttonLayout.addWidget(self.button_check) 
         buttonLayout.addWidget(self.button_box)
         buttonLayout.addWidget(self.helpButton)
 
@@ -1165,7 +1195,11 @@ class cyberLinkDialog(QtWidgets.QDialog):
             temp_link.destination = storage.list_of_new_destinations[source]
             temp_link.sensors = storage.list_of_new_link_sensors[source]
             #update internal network tracker at the same time
-            network.node_net[source].linked_nodes = storage.list_of_new_destinations[source]
+            #print(storage.list_of_new_sources)
+            network.link_net.append(temp_link)
+            for node in network.node_net:
+                if temp_link.source == node.id:
+                    node.linked_nodes.append(storage.list_of_new_destinations[source])
 
         print(storage.list_of_new_sources)
         print(storage.list_of_new_destinations)
