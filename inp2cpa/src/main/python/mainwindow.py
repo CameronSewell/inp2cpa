@@ -230,9 +230,9 @@ class inp2cpaApp(QtWidgets.QDialog):
                 formatted_string = '[CYBERNODES]\n;Name,\tSensors,\tActuators\n'
                 network.node_net = []
                 for x in range(len(storage.list_of_new_plcs)):
-                    range(len(storage.list_of_new_sensors))
-                    range(len(storage.list_of_new_actuators))
-                    formatted_string = formatted_string + str(storage.list_of_new_plcs[x]) + ',\t' + str(storage.list_of_new_sensors[x]) + ',\t' + str(storage.list_of_new_actuators[x]) + '\n'
+                    formatted_string = formatted_string + str(storage.list_of_new_plcs[x]) + ',\t'
+                    formatted_string = formatted_string + str(storage.list_of_new_sensors[x]) + ',\t'
+                    formatted_string = formatted_string + str(storage.list_of_new_actuators[x]) + '\n'
                     tempNode = network.nodes()
                     tempNode.id = str(storage.list_of_new_plcs[x])
                     tempNode.sensors.append(storage.list_of_new_sensors[x])
@@ -244,8 +244,6 @@ class inp2cpaApp(QtWidgets.QDialog):
                 if inp2cpaApp.hasCyberLinks:
                     formatted_string  = formatted_string + '[CYBERLINKS]\n;Source,\tDestination,\tSensors\n' 
                     for x in range(len(storage.list_of_new_sources)):
-                        range(len(storage.list_of_new_destinations))
-                        range(len(storage.list_of_new_link_sensors))
                         formatted_string = formatted_string + str(storage.list_of_new_sources[x]) + ',\t' + str(storage.list_of_new_destinations[x]) + ',\t' + str(storage.list_of_new_link_sensors[x]) + '\n'
                         tempLink = network.links()
                         tempLink.source = str(storage.list_of_new_sources[x])
