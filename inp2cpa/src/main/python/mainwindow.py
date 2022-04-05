@@ -465,9 +465,19 @@ class newPLCDialog(QtWidgets.QDialog):
         ### Sensor field
         self.newSensortxt = QtWidgets.QLineEdit()
         self.newSensortxt.setMinimumWidth(700)
+        f_string = ''
+        for x in range(len(storage.list_of_new_sensors)):
+                f_string = f_string + str(storage.list_of_new_sensors[x]) + ', '
+        f_string = f_string[:-2] #subtract final comma, space
+        self.newSensortxt.setText(f_string)
         ### Actuator field
         self.newActuatortxt = QtWidgets.QLineEdit()
         self.newActuatortxt.setMinimumWidth(700)
+        f_string = ''
+        for x in range(len(storage.list_of_new_actuators)):
+                f_string = f_string + str(storage.list_of_new_actuators[x]) + ', '
+        f_string = f_string[:-2] #subtract final comma, space
+        self.newActuatortxt.setText(f_string)
         ### Warning label
         self.warningtxt = QtWidgets.QLabel(self.warning[self.warningNo])
         self.warningtxt.setStyleSheet("""
@@ -538,7 +548,7 @@ class newPLCDialog(QtWidgets.QDialog):
         self.button_check.clicked.connect(updateChanges)
         ### buttons ok/cancel
         self.button_box = QtWidgets.QDialogButtonBox(QtWidgets.QDialogButtonBox.Ok | QtWidgets.QDialogButtonBox.Cancel)
-        self.button_box.accepted.connect(self.accept)
+        self.button_box.accepted.connect(lambda: (updateChanges, self.accept, self.close()))
         self.button_box.rejected.connect(self.reject)
         ### help button
         self.helpButton = QtWidgets.QPushButton()
@@ -1099,7 +1109,7 @@ class cyberLinkDialog(QtWidgets.QDialog):
 
         ###Button ok/cancel
         self.button_box = QtWidgets.QDialogButtonBox(QtWidgets.QDialogButtonBox.Ok | QtWidgets.QDialogButtonBox.Cancel)
-        self.button_box.accepted.connect(lambda: (self.link_check(), self.close()))
+        self.button_box.accepted.connect(lambda: (self.link_check, self.close()))
         self.button_box.rejected.connect(self.reject)
         ###Help button
         self.helpButton = QtWidgets.QPushButton()
@@ -1182,8 +1192,8 @@ class cyberLinkDialog(QtWidgets.QDialog):
         return list_of_sensors
 
     def link_check(self):
-        """Called when the 'Check Changes' button is clicked.
-        Calles functions to parse the user's source, destination, and sensor inputs. 
+        """Called when the 'Check Changes' or 'Ok' buttons are clicked,
+        Calls functions to parse the user's source, destination, and sensor inputs. 
         Sets the lists returned by the function to their respective lists in the storage class."""
         storage.list_of_new_sources = self.parseNewSource()
         storage.list_of_new_destinations = self.parseNewDestination()
