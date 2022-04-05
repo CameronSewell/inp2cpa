@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>600</width>
-    <height>100</height>
+    <width>500</width>
+    <height>88</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -17,9 +17,9 @@
    <widget class="QPushButton" name="importINP">
     <property name="geometry">
      <rect>
-      <x>500</x>
-      <y>9</y>
-      <width>100</width>
+      <x>490</x>
+      <y>6</y>
+      <width>90</width>
       <height>23</height>
      </rect>
     </property>
@@ -73,7 +73,7 @@
      </rect>
     </property>
     <property name="text">
-     <string>Add Cyber-Attack</string>
+     <string>Add CyberAttack</string>
     </property>
    </widget>
    <widget class="QPushButton" name="previewFileBtn">
@@ -92,9 +92,9 @@
    <widget class="QPushButton" name="save_cpa_btn">
     <property name="geometry">
      <rect>
-      <x>500</x>
+      <x>490</x>
       <y>40</y>
-      <width>100</width>
+      <width>90</width>
       <height>23</height>
      </rect>
     </property>
@@ -108,3 +108,4 @@
  <resources/>
  <connections/>
 </ui>
+

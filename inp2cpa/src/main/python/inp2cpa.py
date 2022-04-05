@@ -2,7 +2,7 @@
 """
 Created on Tue Jun  9 14:27:25 2020
 
-@author: dionisis
+@author: dionisis, camsewell, sotoole
 """
 
 # import sys
@@ -17,8 +17,15 @@ import wntr.network.controls as controls
 
 
 def cyberControlRead(inp_path):
+    """cyberControlRead(inp_path) -> cyberTopology
+    
+    Reads the predefined epanet controls from the inp_path (input file path) using wntr, and initializes
+    a number of variables and conditions. Returns the cyber topology dictionary, which contains a name-indexed list
+    of data and sub-lists related to the various components and key properties of the topology."""
     # Read the predefined epanet controls. Also initialize some default inputs
     wn=wntr.network.WaterNetworkModel(inp_path)
+    wntr.graphics.plot_network(wn,
+        filename=str('nma_'+inp_path.split('.')[0].split('/')[len(inp_path.split('.')[0].split('/'))-1]+'.png')) ##network matplotlib axis object stored as file for viewing/utilization
     ctrls=wn.control_name_list
     # Dicts with keys CONTROLNAMES
     ctrl_orig_names={'ctrl'+str(i):x for i,x in enumerate(ctrls)}
@@ -125,7 +132,6 @@ def cyberControlRead(inp_path):
                    'PLCs':plcs,
                    'PLC Types':plc_type}
     return cyberTopology
-
 
 def register_plc(cyberTopology, listOfchanges):
     """This function registers new PLCs to the {cyberTopology} dictionary. Returns a new dict.
