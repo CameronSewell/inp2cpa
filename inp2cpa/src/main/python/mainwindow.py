@@ -450,11 +450,11 @@ class newPLCDialog(QtWidgets.QDialog):
         Creates the Re-Assign CyberNodes window allowing users to reassign cybernodes through the GUI."""
         super(newPLCDialog, self).__init__()
         self.cpa_dict=cpa_dict
-        self.setFixedWidth(1200)
-        self.setFixedHeight(200)
+        # self.setFixedWidth(1200)
+        # self.setFixedHeight(200)
         ### PLC field
         self.newPLCtxt = QtWidgets.QLineEdit()
-        self.newPLCtxt.setMinimumWidth(700)
+        # self.newPLCtxt.setMinimumWidth(700)
         f_string = ''
         for x in range(len(storage.list_of_new_plcs)):
                 f_string = f_string + str(storage.list_of_new_plcs[x]) + ', '
@@ -462,7 +462,7 @@ class newPLCDialog(QtWidgets.QDialog):
         self.newPLCtxt.setText(f_string)
         ### Sensor field
         self.newSensortxt = QtWidgets.QLineEdit()
-        self.newSensortxt.setMinimumWidth(700)
+        # self.newSensortxt.setMinimumWidth(700)
         f_string = ''
         for x in range(len(storage.list_of_new_sensors)):
                 f_string = f_string + str(storage.list_of_new_sensors[x]) + ', '
@@ -470,12 +470,13 @@ class newPLCDialog(QtWidgets.QDialog):
         self.newSensortxt.setText(f_string)
         ### Actuator field
         self.newActuatortxt = QtWidgets.QLineEdit()
-        self.newActuatortxt.setMinimumWidth(700)
+        # self.newActuatortxt.setMinimumWidth(700)
         f_string = ''
         for x in range(len(storage.list_of_new_actuators)):
                 f_string = f_string + str(storage.list_of_new_actuators[x]) + ', '
         f_string = f_string[:-2] #subtract final comma, space
         self.newActuatortxt.setText(f_string)
+
         ### Warning label
         self.warningtxt = QtWidgets.QLabel(self.warning[self.warningNo])
         self.warningtxt.setStyleSheet("""
@@ -488,6 +489,7 @@ class newPLCDialog(QtWidgets.QDialog):
             Calls check_changes_funct and updates the warning text.'"""
             self.check_changes_func()
             self.warningtxt.setText(self.warning[self.warningNo])
+
         def callHelpWindow (event):
             """Connected to the 'Help' button.
             Calls CreateHelpWindow to create the 'Help for Re-Assigning CyberNodes' window."""
@@ -552,27 +554,45 @@ class newPLCDialog(QtWidgets.QDialog):
         self.helpButton = QtWidgets.QPushButton()
         self.helpButton.setText('Help')
         self.helpButton.clicked.connect(callHelpWindow)
+        
 
         ## layout of the dialog
         outerLayout = QtWidgets.QVBoxLayout()
-        layout = QtWidgets.QFormLayout()
-        layout.setFieldGrowthPolicy(QtWidgets.QFormLayout.AllNonFixedFieldsGrow)
-        layout.addRow('Add PLC names seperated by \',\'', self.newPLCtxt)
-        layout.addRow('Add sensor groups seperated by a \'  \'' ' sensor lists seperated by \',\'', self.newSensortxt)
-        layout.addRow('Add actuator groups seperated by a \'  \'' ' actuator lists seperated by \',\'', self.newActuatortxt)
-        layout.addRow('Check changes',self.button_check)
+        layout = QtWidgets.QVBoxLayout()
         buttonLayout = QtWidgets.QHBoxLayout()
+        myFont = QtGui.QFont()
+        myFont.setBold(True)
+        layout.setSpacing(1)
+        plcnames = QLabel('PLC Names')
+        plcnames.setFont(myFont)
+        layout.addWidget(plcnames)
+        layout.addWidget(QLabel('Separate each name by \',\''))
+        layout.addWidget(self.newPLCtxt)
+        sensors = QLabel('Sensors')
+        sensors.setFont(myFont)
+        layout.addWidget(sensors)
+        layout.addWidget(QLabel('Separate sensors within a group by \'  \'' ' separate sensor lists by \',\''))
+        layout.addWidget(self.newSensortxt)
+        actuators = QLabel('Actuators')
+        actuators.setFont(myFont)
+        layout.addWidget(actuators)
+        layout.addWidget(QLabel('Separate actuators within a group by \'  \'' ' separate actuator lists by \',\''))
+        layout.addWidget(self.newActuatortxt)
+
+        layout.addWidget(self.warningtxt)
+        buttonLayout.addWidget(self.button_check) 
         buttonLayout.addWidget(self.button_box)
         buttonLayout.addWidget(self.helpButton)
-        layout.addWidget(self.warningtxt)
+
         outerLayout.addLayout(layout)
         outerLayout.addLayout(buttonLayout)
-
+        self.setLayout(outerLayout)
 
         ### dialog show
-        self.setLayout(outerLayout)
-        self.setWindowTitle("Re-Assign Cyber Nodes")
-        self.setMinimumWidth(800)   
+        self.setWindowTitle("Re-Assign CyberNodes")
+        self.resize(600, 350)
+        self.setMaximumSize(900, 500)
+
 
     def check_changes_func(self):
         """Connected to the update_changes function. 
@@ -674,7 +694,6 @@ class newPLCDialog(QtWidgets.QDialog):
     #     list_of_new_actuators=[x.split(',') for x in list_of_new_actuators]
     #     return list_of_new_actuators
     #TODO: Add futher parsing of text in the style of parseSensorText
-
     def parseActuatortext(self):
         """Called by the check_changes_func function.
         Splits the user's actuator input by commas, adds the acutators to a list, and returns the list."""
